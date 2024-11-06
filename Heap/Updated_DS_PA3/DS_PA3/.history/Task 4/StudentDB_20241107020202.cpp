@@ -225,7 +225,7 @@ void StudentDatabase::interface() {
         cout << "|  5. Display Students in a Batch and School\n";
         cout << "|  6. Display All Students\n";
         cout << "|  7. Exit\n";
-        cout << "|  8. Clear Screen\n";
+        cout << "|  8. Clear Screen\n"; // Added Clear Screen option
         cout << ":------------------------------------:\n";
 
         while (!(cin >> choice) || choice < 1 || choice > 8) {
@@ -300,8 +300,10 @@ void StudentDatabase::interface() {
                 return;
             }
             case 8: {
-                system("cls"); 
-                break; 
+                // Clear the screen and redisplay the menu
+                system("cls"); // For Windows
+                // system("clear"); // For Linux/macOS
+                break; // No need to do anything else, just clear and return to the menu
             }
         }
     }

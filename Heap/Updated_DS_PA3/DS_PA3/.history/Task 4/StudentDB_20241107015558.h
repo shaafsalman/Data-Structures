@@ -8,7 +8,7 @@
 #include <sstream>
 #include <algorithm>
 #include "tree.cpp"
-#include <cstdlib>
+
 using namespace std;
 
 class Student {

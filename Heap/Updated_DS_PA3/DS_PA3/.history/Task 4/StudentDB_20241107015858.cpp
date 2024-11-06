@@ -216,8 +216,8 @@ void StudentDatabase::interface() {
     string schoolCode;
 
     while (true) {
-        cout << ":------------------------------------:\n";
-        cout << "|  Lums Database management System\n";
+        cout << ":----------------------------:\n";
+        cout << "|    --- Lums Database management System\n";
         cout << "|  1. Add Student\n";
         cout << "|  2. Search Student by Roll Number\n";
         cout << "|  3. Display Student Details\n";
@@ -225,11 +225,10 @@ void StudentDatabase::interface() {
         cout << "|  5. Display Students in a Batch and School\n";
         cout << "|  6. Display All Students\n";
         cout << "|  7. Exit\n";
-        cout << "|  8. Clear Screen\n";
-        cout << ":------------------------------------:\n";
+        cout << ":----------------------------:\n";
 
-        while (!(cin >> choice) || choice < 1 || choice > 8) {
-            cout << "Invalid choice. Please enter a number between 1 and 8: ";
+        while (!(cin >> choice) || choice < 1 || choice > 7) {
+            cout << "Invalid choice. Please enter a number between 1 and 7: ";
             cin.clear(); 
             cin.ignore(10000, '\n');  
         }
@@ -298,10 +297,6 @@ void StudentDatabase::interface() {
             case 7: {
                 cout << "Exiting the system. Goodbye!\n";
                 return;
-            }
-            case 8: {
-                system("cls"); 
-                break; 
             }
         }
     }

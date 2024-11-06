@@ -225,11 +225,10 @@ void StudentDatabase::interface() {
         cout << "|  5. Display Students in a Batch and School\n";
         cout << "|  6. Display All Students\n";
         cout << "|  7. Exit\n";
-        cout << "|  8. Clear Screen\n";
         cout << ":------------------------------------:\n";
 
-        while (!(cin >> choice) || choice < 1 || choice > 8) {
-            cout << "Invalid choice. Please enter a number between 1 and 8: ";
+        while (!(cin >> choice) || choice < 1 || choice > 7) {
+            cout << "Invalid choice. Please enter a number between 1 and 7: ";
             cin.clear(); 
             cin.ignore(10000, '\n');  
         }
@@ -299,14 +298,11 @@ void StudentDatabase::interface() {
                 cout << "Exiting the system. Goodbye!\n";
                 return;
             }
-            case 8: {
-                system("cls"); 
-                break; 
-            }
         }
+
+        system("cls"); 
     }
 }
-
 int main() {
     StudentDatabase db;
     db.interface();

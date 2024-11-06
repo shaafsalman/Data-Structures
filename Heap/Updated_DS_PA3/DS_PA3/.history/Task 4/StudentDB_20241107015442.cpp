@@ -209,33 +209,52 @@ void StudentDatabase::read_csv(const string &filename) {
 }
 
 
-void StudentDatabase::interface() {
+void alert(const string &message, double timeTaken, int totalStudents) {
+    cout << "\n--- " << message << " ---\n";
+    cout << "Time taken to load the database: " << timeTaken << " seconds\n";
+    cout << "Total number of students: " << totalStudents << "\n";
+}
+
+void displayMenu() {
+       cout << ":----------------------------:\n";
+
+    // Print each line inside the menu
+    cout << "|    --- Lums Database management System    \n";
+    cout << "|  1. Add Student                           \n";
+    cout << "|  2. Search Student by Roll Number     \n";
+    cout << "|  3. Display Student Details               \n";
+    cout << "|  4. Display All Students in a Batch     \n";
+    cout << "|  5. Display Students in a Batch and School  \n";
+    cout << "|  6. Display All Students                  \n";
+    cout << "|  7. Exit                                           \n";
+
+    // Print bottom border
+    cout << ":----------------------------:\n";
+}
+
+int main() {
+     StudentDatabase db;
+
+    alert("Database loaded with students");
+
     int choice;
     string rollNumber;
     int batch;
     string schoolCode;
 
     while (true) {
-        cout << ":------------------------------------:\n";
-        cout << "|  Lums Database management System\n";
-        cout << "|  1. Add Student\n";
-        cout << "|  2. Search Student by Roll Number\n";
-        cout << "|  3. Display Student Details\n";
-        cout << "|  4. Display All Students in a Batch\n";
-        cout << "|  5. Display Students in a Batch and School\n";
-        cout << "|  6. Display All Students\n";
-        cout << "|  7. Exit\n";
-        cout << "|  8. Clear Screen\n";
-        cout << ":------------------------------------:\n";
+        displayMenu();
 
-        while (!(cin >> choice) || choice < 1 || choice > 8) {
-            cout << "Invalid choice. Please enter a number between 1 and 8: ";
-            cin.clear(); 
-            cin.ignore(10000, '\n');  
+        // Handle invalid input without numeric_limits
+        while (!(cin >> choice) || choice < 1 || choice > 7) {
+            cout << "Invalid choice. Please enter a number between 1 and 7: ";
+            cin.clear(); // Clear the error state
+            cin.ignore(10000, '\n'); // Ignore incorrect input up to 10000 characters
         }
 
         switch (choice) {
             case 1: {
+                // Add Student
                 string name, major;
                 int age;
                 float GPA;
@@ -253,15 +272,16 @@ void StudentDatabase::interface() {
                 getline(cin, major);
 
                 Student newStudent(rollNumber, name, age, GPA, major);
-                addStudent(newStudent);
+                db.addStudent(newStudent);
                 cout << "Student added successfully!\n";
                 break;
             }
             case 2: {
+                // Search Student by Roll Number
                 cout << "Enter roll number to search: ";
                 cin >> rollNumber;
 
-                if (searchStudent(rollNumber)) {
+                if (db.searchStudent(rollNumber)) {
                     cout << "Student found.\n";
                 } else {
                     cout << "Student not found.\n";
@@ -269,46 +289,43 @@ void StudentDatabase::interface() {
                 break;
             }
             case 3: {
+                // Display Student Details
                 cout << "Enter roll number to display details: ";
                 cin >> rollNumber;
 
-                displayStudent(rollNumber);
+                db.displayStudent(rollNumber);
                 break;
             }
             case 4: {
+                // Display All Students in a Batch
                 cout << "Enter batch number: ";
                 cin >> batch;
 
-                displayBatch(batch);
+                db.displayBatch(batch);
                 break;
             }
             case 5: {
+                // Display Students in a Batch and School
                 cout << "Enter batch number: ";
                 cin >> batch;
                 cout << "Enter school code (e.g. 01, 02, 03, etc.): ";
                 cin >> schoolCode;
 
-                displayBatchAndSchool(batch, schoolCode);
+                db.displayBatchAndSchool(batch, schoolCode);
                 break;
             }
             case 6: {
-                displayAll();
+                // Display All Students
+                db.displayAll();
                 break;
             }
             case 7: {
+                // Exit
                 cout << "Exiting the system. Goodbye!\n";
-                return;
-            }
-            case 8: {
-                system("cls"); 
-                break; 
+                return 0;
             }
         }
     }
-}
 
-int main() {
-    StudentDatabase db;
-    db.interface();
     return 0;
 }

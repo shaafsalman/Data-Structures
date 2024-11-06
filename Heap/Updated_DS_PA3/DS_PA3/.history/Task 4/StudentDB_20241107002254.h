@@ -8,7 +8,7 @@
 #include <sstream>
 #include <algorithm>
 #include "tree.cpp"
-#include <cstdlib>
+
 using namespace std;
 
 class Student {
@@ -34,6 +34,7 @@ public:
         schoolCode = "";
         schoolRollNumber = 0;
     }
+
     Student(string rollNumber, string name, int age, float GPA, string major)
         : rollNumber(rollNumber), name(name), age(age), GPA(GPA), major(major) {
         // Extract batch, school code, and school roll number from roll number
@@ -87,8 +88,8 @@ public:
     void displayBatch(const int batch);
     void displayBatchAndSchool(const int batch, const string schoolCode);
     void displayAll();
-    void read_csv(const string &filename);
-    void interface(); 
+    void read_csv(const string &filename); // Use CSV File given in Test Folder as it will be used
+    void interface(); // User interface for the database All checking would be done here
 };
 
 #endif

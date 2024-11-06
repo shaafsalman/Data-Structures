@@ -209,33 +209,38 @@ void StudentDatabase::read_csv(const string &filename) {
 }
 
 
-void StudentDatabase::interface() {
+void alert(const string &message) {
+    cout << "\n--- " << message << " ---\n";
+}
+
+void displayMenu() {
+    cout << "\n--- Student Database Menu ---\n";
+    cout << "1. Add Student\n";
+    cout << "2. Search Student by Roll Number\n";
+    cout << "3. Display Student Details\n";
+    cout << "4. Display All Students in a Batch\n";
+    cout << "5. Display Students in a Batch and School\n";
+    cout << "6. Display All Students\n";
+    cout << "7. Exit\n";
+    cout << "Enter your choice (1-7): ";
+}
+
+int main() {
+    StudentDatabase db;
+
     int choice;
     string rollNumber;
     int batch;
     string schoolCode;
+    string filename;
 
     while (true) {
-        cout << ":------------------------------------:\n";
-        cout << "|  Lums Database management System\n";
-        cout << "|  1. Add Student\n";
-        cout << "|  2. Search Student by Roll Number\n";
-        cout << "|  3. Display Student Details\n";
-        cout << "|  4. Display All Students in a Batch\n";
-        cout << "|  5. Display Students in a Batch and School\n";
-        cout << "|  6. Display All Students\n";
-        cout << "|  7. Exit\n";
-        cout << "|  8. Clear Screen\n";
-        cout << ":------------------------------------:\n";
-
-        while (!(cin >> choice) || choice < 1 || choice > 8) {
-            cout << "Invalid choice. Please enter a number between 1 and 8: ";
-            cin.clear(); 
-            cin.ignore(10000, '\n');  
-        }
+        displayMenu();
+        cin >> choice;
 
         switch (choice) {
             case 1: {
+                // Add Student
                 string name, major;
                 int age;
                 float GPA;
@@ -253,15 +258,16 @@ void StudentDatabase::interface() {
                 getline(cin, major);
 
                 Student newStudent(rollNumber, name, age, GPA, major);
-                addStudent(newStudent);
+                db.addStudent(newStudent);
                 cout << "Student added successfully!\n";
                 break;
             }
             case 2: {
+                // Search Student by Roll Number
                 cout << "Enter roll number to search: ";
                 cin >> rollNumber;
 
-                if (searchStudent(rollNumber)) {
+                if (db.searchStudent(rollNumber)) {
                     cout << "Student found.\n";
                 } else {
                     cout << "Student not found.\n";
@@ -269,46 +275,54 @@ void StudentDatabase::interface() {
                 break;
             }
             case 3: {
+                // Display Student Details
                 cout << "Enter roll number to display details: ";
                 cin >> rollNumber;
 
-                displayStudent(rollNumber);
+                db.displayStudent(rollNumber);
                 break;
             }
             case 4: {
+                // Display All Students in a Batch
                 cout << "Enter batch number: ";
                 cin >> batch;
 
-                displayBatch(batch);
+                db.displayBatch(batch);
                 break;
             }
             case 5: {
+                // Display Students in a Batch and School
                 cout << "Enter batch number: ";
                 cin >> batch;
                 cout << "Enter school code (e.g. 01, 02, 03, etc.): ";
                 cin >> schoolCode;
 
-                displayBatchAndSchool(batch, schoolCode);
+                db.displayBatchAndSchool(batch, schoolCode);
                 break;
             }
             case 6: {
-                displayAll();
+                // Display All Students
+                db.displayAll();
                 break;
             }
             case 7: {
-                cout << "Exiting the system. Goodbye!\n";
-                return;
+                // Read Students from CSV File
+                cout << "Enter CSV file path: ";
+                cin >> filename;
+
+                db.read_csv(filename);
+                cout << "Students added from CSV file.\n";
+                break;
             }
             case 8: {
-                system("cls"); 
-                break; 
+                // Exit
+                cout << "Exiting the system. Goodbye!\n";
+                return 0;
             }
+            default:
+                cout << "Invalid choice. Please try again.\n";
         }
     }
-}
 
-int main() {
-    StudentDatabase db;
-    db.interface();
     return 0;
 }
