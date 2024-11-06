@@ -3,7 +3,6 @@
 #include "heap.h"
 #include <memory>
 #include <climits>
-#include <iostream>
 
 // Constructor: Initializes the heap with the given capacity and allocates memory for the heap array.
 MinHeap::MinHeap(int cap)
@@ -76,13 +75,9 @@ int MinHeap::extractMin()
 // Decreases the key value of the node at index i to new_val. If the new value is smaller, the function ensures the heap property is maintained.
 void MinHeap::decreaseKey(int i, int new_val)
 {
-    if (new_val >= harr.get()[i]) {
-        std::cout << "New value is larger than current value\n";
-        return;
-    }
     harr.get()[i] = new_val;
 
-    // Bubble up the changed value to restore heap property.
+    // Bubble up the changed value to restore heap property
     while (i != 0 && harr.get()[parent(i)] > harr.get()[i])
     {
         std::swap(harr.get()[i], harr.get()[parent(i)]);

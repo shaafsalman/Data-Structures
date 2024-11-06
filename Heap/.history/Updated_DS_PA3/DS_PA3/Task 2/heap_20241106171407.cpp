@@ -4,6 +4,7 @@
 #include <memory>
 #include <climits>
 #include <iostream>
+#include <algorithm>
 
 // Constructor: Initializes the heap with the given capacity and allocates memory for the heap array.
 MinHeap::MinHeap(int cap)
@@ -50,27 +51,29 @@ int MinHeap::extractMin()
     heap_size--;
 
     // Reorganize the heap to maintain the min-heap property.
-    int i = 0;
-    while (true)
-    {
-        int smallest = i;
-        int l = left(i);
-        int r = right(i);
-
-        if (l < heap_size && harr.get()[l] < harr.get()[smallest])
-            smallest = l;
-
-        if (r < heap_size && harr.get()[r] < harr.get()[smallest])
-            smallest = r;
-
-        if (smallest == i)
-            break;
-
-        std::swap(harr.get()[i], harr.get()[smallest]);
-        i = smallest;
-    }
+    minHeapify(0);
 
     return root;
+}
+
+// Helper function to maintain the min-heap property (bubble down).
+void MinHeap::minHeapify(int i)
+{
+    int smallest = i;
+    int l = left(i);
+    int r = right(i);
+
+    if (l < heap_size && harr.get()[l] < harr.get()[smallest])
+        smallest = l;
+
+    if (r < heap_size && harr.get()[r] < harr.get()[smallest])
+        smallest = r;
+
+    if (smallest != i)
+    {
+        std::swap(harr.get()[i], harr.get()[smallest]);
+        minHeapify(smallest); // Recursively heapify the affected subtree.
+    }
 }
 
 // Decreases the key value of the node at index i to new_val. If the new value is smaller, the function ensures the heap property is maintained.

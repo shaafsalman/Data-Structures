@@ -399,3 +399,5 @@ void HashTable<T>::printTable()
         cout << endl;
     }
 }
+
+#endif

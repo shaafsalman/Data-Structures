@@ -3,7 +3,6 @@
 #include "heap.h"
 #include <memory>
 #include <climits>
-#include <iostream>
 
 // Constructor: Initializes the heap with the given capacity and allocates memory for the heap array.
 MinHeap::MinHeap(int cap)
@@ -76,13 +75,8 @@ int MinHeap::extractMin()
 // Decreases the key value of the node at index i to new_val. If the new value is smaller, the function ensures the heap property is maintained.
 void MinHeap::decreaseKey(int i, int new_val)
 {
-    if (new_val >= harr.get()[i]) {
-        std::cout << "New value is larger than current value\n";
-        return;
-    }
     harr.get()[i] = new_val;
 
-    // Bubble up the changed value to restore heap property.
     while (i != 0 && harr.get()[parent(i)] > harr.get()[i])
     {
         std::swap(harr.get()[i], harr.get()[parent(i)]);
@@ -101,11 +95,8 @@ int MinHeap::getMin()
 // Deletes the element at index i by first decreasing its value to negative infinity, then calling extractMin() to remove it.
 void MinHeap::deleteKey(int i)
 {
-    // Decrease the value of the node to INT_MIN, which is smaller than any possible value
-    decreaseKey(i, INT_MIN);
-    
-    // Call extractMin to remove the newly minimized node (which is now the root).
-    extractMin();
+    decreaseKey(i, INT_MIN);  // Set the key to negative infinity.
+    extractMin();  // Remove the minimum element (which will be the one we decreased to negative infinity).
 }
 
 // Inserts a new key 'k' into the heap. If the heap is full, it resizes dynamically.
@@ -117,11 +108,9 @@ void MinHeap::insertKey(int k)
         return;
     }
 
-    // Insert the new key at the end of the heap
     int i = heap_size++;
     harr.get()[i] = k;
 
-    // Bubble up the inserted key to restore heap property
     while (i != 0 && harr.get()[parent(i)] > harr.get()[i])
     {
         std::swap(harr.get()[i], harr.get()[parent(i)]);

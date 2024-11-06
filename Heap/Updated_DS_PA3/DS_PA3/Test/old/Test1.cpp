@@ -1,13 +1,26 @@
 #include <iostream>
 #include <vector>
+#include <future>
 #include <chrono>
 #include <memory>
-#include "../Task 1/Hashing.cpp"
+#include <thread>
+#include "../Task 1/Hashing.cpp" // Include your hash table implementation
 
 using namespace std;
 
-// Timeout limit in seconds
-constexpr int TIMEOUT_LIMIT = 3;
+// Global variables for timeout handling
+bool timeOut;
+promise<bool> done;
+
+// Enum for collision handling types
+
+// Timer function to handle timeout
+void timer(future<bool> done_future) {
+    chrono::seconds span(3);
+    if (done_future.wait_for(span) == future_status::timeout) {
+        timeOut = true;
+    }
+}
 
 // Helper function to convert CollisionHandling to string
 string typeToString(CollisionHandling type) {
@@ -22,7 +35,7 @@ string typeToString(CollisionHandling type) {
 
 // Template function to test hash table with both int and string types
 template<typename T>
-double runTest(vector<int> keys, vector<T> values, CollisionHandling type) {
+double runTest(vector<int> keys, vector<T> values, CollisionHandling type, promise<bool> done_future) {
     using namespace chrono;
 
     HashTable<T> table(type); // Using different collision strategies
@@ -34,9 +47,7 @@ double runTest(vector<int> keys, vector<T> values, CollisionHandling type) {
     // Insert values into the hash table
     for (size_t i = 0; i < keys.size(); ++i) {
         table.insert(keys[i], values[i]);
-        auto currentTime = high_resolution_clock::now();
-        auto elapsed = duration_cast<seconds>(currentTime - startTime).count();
-        if (elapsed > TIMEOUT_LIMIT) {
+        if (timeOut) {
             cout << "Test timed out!" << endl;
             return score;
         }
@@ -53,9 +64,7 @@ double runTest(vector<int> keys, vector<T> values, CollisionHandling type) {
             cout << "Search failed!" << endl;
             return score;
         }
-        auto currentTime = high_resolution_clock::now();
-        auto elapsed = duration_cast<seconds>(currentTime - startTime).count();
-        if (elapsed > TIMEOUT_LIMIT) {
+        if (timeOut) {
             cout << "Test timed out!" << endl;
             return score;
         }
@@ -68,9 +77,7 @@ double runTest(vector<int> keys, vector<T> values, CollisionHandling type) {
     // Remove values from the hash table
     for (size_t i = 0; i < keys.size(); ++i) {
         table.remove(keys[i]);
-        auto currentTime = high_resolution_clock::now();
-        auto elapsed = duration_cast<seconds>(currentTime - startTime).count();
-        if (elapsed > TIMEOUT_LIMIT) {
+        if (timeOut) {
             cout << "Test timed out!" << endl;
             return score;
         }
@@ -82,9 +89,7 @@ double runTest(vector<int> keys, vector<T> values, CollisionHandling type) {
             cout << "Removal failed!" << endl;
             return score;
         }
-        auto currentTime = high_resolution_clock::now();
-        auto elapsed = duration_cast<seconds>(currentTime - startTime).count();
-        if (elapsed > TIMEOUT_LIMIT) {
+        if (timeOut) {
             cout << "Test timed out!" << endl;
             return score;
         }
@@ -92,6 +97,7 @@ double runTest(vector<int> keys, vector<T> values, CollisionHandling type) {
     score += 1.5; // Removal test contributes 1.5 points
     cout << "Passed!" << endl;
 
+    done_future.set_value(true);
     auto endTime = high_resolution_clock::now();
     duration<double> totalTime = duration_cast<duration<double>>(endTime - startTime);
 
@@ -114,14 +120,28 @@ int main() {
     double totalScore = 0;
 
     for (auto type : collisionTypes) {
+        // Initialize timeout control for integer test
+        timeOut = false;
+        promise<bool> doneIntPromise;
+        future<bool> doneIntFuture = doneIntPromise.get_future();
+        thread intTimer(timer, move(doneIntFuture));
+
         // Run integer test
         cout << "Testing " << typeToString(type) << " with integer values..." << endl;
-        double intScore = runTest(intKeys, intValues, type);
+        double intScore = runTest(intKeys, intValues, type, move(doneIntPromise));
+        intTimer.join();  // Wait for the timer thread to finish
+
+        // Initialize timeout control for string test
+        timeOut = false;
+        promise<bool> doneStrPromise;
+        future<bool> doneStrFuture = doneStrPromise.get_future();
+        thread strTimer(timer, move(doneStrFuture));
 
         // Run string test
         cout << "----------------------------------------------" << endl;
         cout << "Testing " << typeToString(type) << " with string values..." << endl;
-        double strScore = runTest(strKeys, strValues, type);
+        double strScore = runTest(strKeys, strValues, type, move(doneStrPromise));
+        strTimer.join();  // Wait for the timer thread to finish
 
         double collisionScore = (intScore + strScore) / 2; // Each method contributes up to 7.5 points
         totalScore += collisionScore;

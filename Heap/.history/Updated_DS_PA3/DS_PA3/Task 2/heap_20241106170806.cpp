@@ -1,15 +1,18 @@
 #ifndef __HEAP_CPP
 #define __HEAP_CPP
+
 #include "heap.h"
-#include <memory>
-#include <climits>
 #include <iostream>
+#include <climits>
+#include <cstdlib>
+#include <memory>
 
 // Constructor: Initializes the heap with the given capacity and allocates memory for the heap array.
 MinHeap::MinHeap(int cap)
 {
     capacity = cap;
     heap_size = 0;
+    // Allocate memory for the heap array
     harr = shared_ptr<int>(new int[capacity], std::default_delete<int[]>());
 }
 
@@ -35,54 +38,34 @@ int MinHeap::right(int i)
 int MinHeap::extractMin()
 {
     if (heap_size <= 0)
-        return INT_MAX; // If the heap is empty, return a large value.
+        return INT_MAX; // If the heap is empty, return a large value
 
     if (heap_size == 1)
     {
         heap_size--;
-        return harr.get()[0]; // If there's only one element, return it.
+        return harr.get()[0]; // If there's only one element, return it
     }
 
-    // Store the minimum value (root).
+    // Store the minimum value (root)
     int root = harr.get()[0];
-    // Move the last element to the root and decrease heap size.
+    // Move the last element to the root and decrease heap size
     harr.get()[0] = harr.get()[heap_size - 1];
     heap_size--;
 
-    // Reorganize the heap to maintain the min-heap property.
-    int i = 0;
-    while (true)
-    {
-        int smallest = i;
-        int l = left(i);
-        int r = right(i);
-
-        if (l < heap_size && harr.get()[l] < harr.get()[smallest])
-            smallest = l;
-
-        if (r < heap_size && harr.get()[r] < harr.get()[smallest])
-            smallest = r;
-
-        if (smallest == i)
-            break;
-
-        std::swap(harr.get()[i], harr.get()[smallest]);
-        i = smallest;
-    }
+    // Reorganize the heap to maintain the min-heap property
+    MinHeapify(0);
 
     return root;
 }
 
-// Decreases the key value of the node at index i to new_val. If the new value is smaller, the function ensures the heap property is maintained.
+// Decreases the key value of the node at index i to new_val. 
+// If the new value is smaller, the function ensures the heap property is maintained.
 void MinHeap::decreaseKey(int i, int new_val)
 {
-    if (new_val >= harr.get()[i]) {
-        std::cout << "New value is larger than current value\n";
-        return;
-    }
+    // Change the value of the element
     harr.get()[i] = new_val;
 
-    // Bubble up the changed value to restore heap property.
+    // Ensure the heap property is maintained by "bubbling up" the element
     while (i != 0 && harr.get()[parent(i)] > harr.get()[i])
     {
         std::swap(harr.get()[i], harr.get()[parent(i)]);
@@ -94,18 +77,15 @@ void MinHeap::decreaseKey(int i, int new_val)
 int MinHeap::getMin()
 {
     if (heap_size <= 0)
-        return INT_MAX; // If the heap is empty, return a large value.
+        return INT_MAX; // If the heap is empty, return a large value
     return harr.get()[0];
 }
 
 // Deletes the element at index i by first decreasing its value to negative infinity, then calling extractMin() to remove it.
 void MinHeap::deleteKey(int i)
 {
-    // Decrease the value of the node to INT_MIN, which is smaller than any possible value
-    decreaseKey(i, INT_MIN);
-    
-    // Call extractMin to remove the newly minimized node (which is now the root).
-    extractMin();
+    decreaseKey(i, INT_MIN);  // Set the key to negative infinity
+    extractMin();  // Remove the minimum element (which will be the one we decreased to negative infinity)
 }
 
 // Inserts a new key 'k' into the heap. If the heap is full, it resizes dynamically.
@@ -117,15 +97,38 @@ void MinHeap::insertKey(int k)
         return;
     }
 
-    // Insert the new key at the end of the heap
+    // First insert the new key at the end of the heap
     int i = heap_size++;
     harr.get()[i] = k;
 
-    // Bubble up the inserted key to restore heap property
+    // Fix the min-heap property if it is violated by the new insertion
     while (i != 0 && harr.get()[parent(i)] > harr.get()[i])
     {
         std::swap(harr.get()[i], harr.get()[parent(i)]);
         i = parent(i);
+    }
+}
+
+// Heapify a subtree with the root at given index (i) to maintain the min-heap property.
+void MinHeap::MinHeapify(int i)
+{
+    int l = left(i);
+    int r = right(i);
+    int smallest = i;
+
+    // Check if left child exists and is smaller than the current node
+    if (l < heap_size && harr.get()[l] < harr.get()[i])
+        smallest = l;
+
+    // Check if right child exists and is smaller than the current smallest
+    if (r < heap_size && harr.get()[r] < harr.get()[smallest])
+        smallest = r;
+
+    // If the smallest element is not the current node, swap and recursively heapify the affected subtree
+    if (smallest != i)
+    {
+        std::swap(harr.get()[i], harr.get()[smallest]);
+        MinHeapify(smallest);
     }
 }
 
