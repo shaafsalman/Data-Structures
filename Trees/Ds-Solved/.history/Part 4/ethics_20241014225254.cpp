@@ -1,0 +1,138 @@
+#include <iostream>
+#include <memory>
+#include <vector>
+#include <queue>
+#include <functional> // Include this header
+#include "../Part 3/avl.h"
+
+using namespace std;
+
+// This function calculates the maximum number of applicants that you can shortlist
+template <class T, class S, class C>
+int AVL<T, S, C>::number_to_shortlist(shared_ptr<node<T, S, C>> root) {
+    if (!root) return 0; // Base case: empty tree
+
+    // Calculate the height of both left and right subtrees
+    int leftHeight = number_to_shortlist(root->left);
+    int rightHeight = number_to_shortlist(root->right);
+
+    // Debugging output
+    std::cout << "Debug: Node workExperience = " << root->workExperience << std::endl;
+    std::cout << "Debug: Left subtree height = " << leftHeight << std::endl;
+    std::cout << "Debug: Right subtree height = " << rightHeight << std::endl;
+
+    // Return the greater of the two heights plus one (to include the root itself)
+    return std::max(leftHeight, rightHeight) + 1;
+}
+
+// This function returns shortlisted candidates on the right most path to leaf
+vector<T> AVL<T, S, C>::right_most(shared_ptr<node<T, S, C>> root) {
+    vector<T> result;
+    shared_ptr<node<T, S, C>> current = root;
+
+    // Traverse the right-most path
+    while (current) {
+        result.push_back(current->workExperience); // or use another key property as needed
+        current = current->right;
+    }
+
+    return result;
+}
+
+// This function returns shortlisted candidates in-order
+template <class T, class S, class C>
+vector<T> AVL<T, S, C>::in_order(shared_ptr<node<T, S, C>> root) {
+    vector<T> result;
+    int limit = number_to_shortlist(root); // Get the limit on number of shortlisted candidates
+    vector<T> temp;
+
+    // In-order traversal helper function
+    function<void(shared_ptr<node<T, S, C>>)> inOrderHelper = [&](shared_ptr<node<T, S, C>> node) {
+        if (node) {
+            inOrderHelper(node->left);
+            if (temp.size() < limit) { // Only add up to the limit
+                temp.push_back(node->workExperience);
+            }
+            inOrderHelper(node->right);
+        }
+    };
+
+    inOrderHelper(root);
+    return temp;
+}
+
+// This function returns shortlisted candidates in level order
+template <class T, class S, class C>
+vector<T> AVL<T, S, C>::level_order(shared_ptr<node<T, S, C>> root) {
+    vector<T> result;
+    int limit = number_to_shortlist(root); // Get the limit on number of shortlisted candidates
+    queue<shared_ptr<node<T, S, C>>> q;
+
+    if (root) q.push(root);
+
+    while (!q.empty() && result.size() < limit) {
+        auto current = q.front();
+        q.pop();
+        result.push_back(current->workExperience); // Add the current node's work experience
+
+        // Push left and right children to the queue
+        if (current->left) q.push(current->left);
+        if (current->right) q.push(current->right);
+    }
+
+    return result;
+}
+
+
+
+
+// Updated bias function to count gender distribution correctly
+template <class T, class S, class C>
+vector<float> AVL<T, S, C>::bias(shared_ptr<node<T, S, C>> root) {
+    vector<float> ratios;
+    queue<shared_ptr<node<T, S, C>>> q;
+
+    if (root) q.push(root);
+
+    while (!q.empty()) {
+        auto current = q.front();
+        q.pop();
+
+        int maleCount = 0;
+        int femaleCount = 0;
+
+        // Improved recursive traversal to count gender in all nodes of the subtree
+        function<void(shared_ptr<node<T, S, C>>)> countHelper = [&](shared_ptr<node<T, S, C>> node) {
+            if (node) {
+                // Count the gender of the current node
+                if (node->gender == "Male") {
+                    maleCount++;
+                } else if (node->gender == "Female") {
+                    femaleCount++;
+                }
+                // Recursively call for both left and right children
+                countHelper(node->left);
+                countHelper(node->right);
+            }
+        };
+
+        // Call the helper function on both left and right subtrees to ensure all nodes are counted
+        countHelper(current);
+
+        // Debugging output for gender counts
+        std::cout << "Debug: Current node workExperience = " << current->workExperience << std::endl;
+        std::cout << "Debug: Male count = " << maleCount << ", Female count = " << femaleCount << std::endl;
+
+        // Compute the ratio of females to males, avoiding division by zero
+        float ratio = (maleCount > 0) ? static_cast<float>(femaleCount) / maleCount : 0.0f;
+        std::cout << "Debug: Computed ratio = " << ratio << std::endl;
+
+        ratios.push_back(ratio);
+
+        // Add children to the queue for the next level
+        if (current->left) q.push(current->left);
+        if (current->right) q.push(current->right);
+    }
+
+    return ratios;
+}

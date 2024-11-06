@@ -1,0 +1,165 @@
+#include "dns.h"
+#include <iostream>
+#include <fstream>
+#include <memory>
+#include <vector>
+
+using namespace std;
+
+DNS::DNS()
+{
+    domainTree = make_shared<Tree<string, string>>(make_shared<node<string, string>>("ROOT", "ROOT"));
+}
+void DNS::generateOutput(vector<shared_ptr<Webpage>> pages)
+{
+    ofstream file("output.txt", ios::out);
+    if (!file.is_open()) {
+        cerr << "Failed to open output.txt for writing." << endl; // Error check for file opening
+        return;
+    }
+
+    int length = pages.size(); // Get the total number of webpages
+    file << length << endl; // Write the number of webpages at the top
+
+    for (int i = 0; i < length; i++)
+    {
+        ptr = pages.at(i);
+        // Construct the base URL with the correct format
+        string line = ptr->domain + "." + ptr->TLD; // domain + TLD
+        
+        // Append subdomains if they exist
+        if (!ptr->subdomains.empty())
+        {
+            for (const auto &element : ptr->subdomains)
+                line += "/" + element; // Append subdomain paths
+        }
+
+        // Ensure no trailing special characters (e.g., whitespace)
+        line.erase(remove_if(line.begin(), line.end(), [](unsigned char x) { return !isprint(x); }), line.end());
+
+        // Write the constructed URL to the file
+        file << line << endl;
+
+        // Debug line to verify URL construction
+        cout << "Generated URL: " << line << endl; // Debug output
+    }
+
+    file.close(); // Close the file after writing
+}
+
+void DNS::addWebpage(string url) 
+{
+    shared_ptr<Webpage> webpage = make_shared<Webpage>(url);
+
+    // Step 1: Add or find the TLD node
+    shared_ptr<node<string, string>> tldNode = domainTree->findKey(webpage->TLD);
+    if (!tldNode) {
+        tldNode = make_shared<node<string, string>>(webpage->TLD, webpage->TLD);
+        domainTree->insertChild(tldNode, "ROOT");
+    }
+
+    // Step 2: Add or find the domain node under the TLD
+    shared_ptr<node<string, string>> domainNode = domainTree->findKey(webpage->domain);
+    if (!domainNode) {
+        domainNode = make_shared<node<string, string>>(webpage->domain, webpage->domain);
+        domainTree->insertChild(domainNode, tldNode->key);
+    }
+
+    // Step 3: Add the subdomains, if any, under the domain node
+    shared_ptr<node<string, string>> currentNode = domainNode;
+    for (const auto &subdomain : webpage->subdomains) {
+        shared_ptr<node<string, string>> subdomainNode = domainTree->findKey(subdomain);
+        if (!subdomainNode) {
+            subdomainNode = make_shared<node<string, string>>(subdomain, subdomain);
+            domainTree->insertChild(subdomainNode, currentNode->key);
+        }
+        currentNode = subdomainNode; // Move to the current subdomain node
+    }
+}
+
+// Return the number of registered TLDs (second-level nodes under the ROOT)
+int DNS::numRegisteredTLDs()
+{
+    return domainTree->getAllChildren("ROOT").size();
+}
+
+// Retrieve all webpages under a specific TLD
+vector<shared_ptr<Webpage>> DNS::getAllWebpages(string TLD)
+{
+    vector<shared_ptr<Webpage>> results;
+    shared_ptr<node<string, string>> tldNode = domainTree->findKey(TLD);
+    
+    if (tldNode == nullptr) {
+        return results; // Return empty vector if TLD not found
+    }
+    
+    // Traverse all domains and subdomains under the TLD and collect the pages
+    for (const auto& domainNode : tldNode->children) {
+        shared_ptr<vector<string>> subdomainResults = make_shared<vector<string>>();
+        getDomainPagesHelper(domainNode, domainNode->key + "." + TLD, subdomainResults);
+        
+        // Convert string results to Webpage objects and add them to results
+        for (const auto& result : *subdomainResults) {
+            results.push_back(make_shared<Webpage>(result)); // Create a Webpage for each string
+        }
+    }
+    
+    return results;
+}
+
+// Retrieve all webpages under a specific domain
+vector<shared_ptr<Webpage>> DNS::getDomainPages(string domain)
+{
+    vector<shared_ptr<Webpage>> results;
+    shared_ptr<node<string, string>> domainNode = domainTree->findKey(domain);
+    
+    if (domainNode == nullptr) {
+        return results; // Return empty vector if domain not found
+    }
+    
+    // Use the helper function to retrieve all pages under the domain
+    shared_ptr<vector<string>> subdomainResults = make_shared<vector<string>>();
+    getDomainPagesHelper(domainNode, domainNode->key, subdomainResults);
+    
+    // Convert string results to Webpage objects and add them to results
+    for (const auto& result : *subdomainResults) {
+        results.push_back(make_shared<Webpage>(result)); // Create a Webpage for each string
+    }
+    
+    return results;
+}
+
+// Helper function to recursively collect domain pages
+void DNS::getDomainPagesHelper(shared_ptr<node<string, string>> currDomain, string currentPath, shared_ptr<vector<string>> results)
+{
+    // If this is a leaf node, add the current path (webpage) to the results
+    if (currDomain->children.empty()) {
+        results->push_back(currentPath); // Add the path as a string
+    }
+    for (const auto& child : currDomain->children) {
+        getDomainPagesHelper(child, currentPath + "/" + child->key, results);
+    }
+}
+
+// Return the pointer to the DNS tree
+shared_ptr<Tree<string, string>> DNS::getDomainTree()
+{
+    return domainTree;
+}
+
+// Find the TLD for the given domain
+string DNS::findTLD(string domain)
+{
+    vector<shared_ptr<node<string, string>>> tlds = domainTree->getAllChildren("ROOT");
+    
+    // Traverse through each TLD and search for the domain
+    for (const auto& tldNode : tlds) {
+        for (const auto& domainNode : tldNode->children) {
+            if (domainNode->key == domain) {
+                return tldNode->key; // Return the TLD if the domain is found
+            }
+        }
+    }
+    
+    return ""; // Return an empty string if the domain is not found
+}

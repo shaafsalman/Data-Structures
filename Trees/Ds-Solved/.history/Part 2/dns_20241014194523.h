@@ -1,0 +1,99 @@
+#ifndef __DNS_H
+#define __DNS_H
+
+// #include "../Part 1/tree.cpp"
+#include <string>
+#include <fstream>
+
+
+
+template <class T, class S>
+struct node {
+	T key;
+	S value;
+	vector<shared_ptr<node<T,S>>> children;
+
+	node(T key, S value) {
+
+		this->key = key;
+		this->value = value;
+	}
+};
+
+
+// Tree class
+template <class T, class S>
+class Tree {
+	shared_ptr<node<T,S>> root;
+	shared_ptr<node<T,S>> findKeyHelper(shared_ptr<node<T,S>>, T);
+	int findHeightHelper(shared_ptr<node<T,S>>);
+	shared_ptr<node<T,S>> deleteLeafHelper(shared_ptr<node<T,S>>, T);
+	void deleteTree(shared_ptr<node<T,S>>);
+
+public:
+	Tree(shared_ptr<node<T,S>>);
+	shared_ptr<node<T,S>> findKey(T);
+	bool insertChild(shared_ptr<node<T,S>>, T);
+	vector<shared_ptr<node<T,S>>> getAllChildren(T);
+	int findHeight();
+	bool deleteLeaf(T);
+	shared_ptr<node<T,S>> getRoot();
+	
+	// Declare helper functions here
+};
+struct Webpage
+{
+    string TLD;
+    string domain;
+    vector<string> subdomains;
+
+    Webpage(string url)
+    {
+        int i = 0;
+        for (i = 0; i < url.length(); i++) 
+        {
+            if (url[i] != '.')
+                domain += url[i];
+            else
+                break;
+        }
+
+        for (int k = 0; k < 3; k++)
+            TLD += url[++i];
+        
+        string temp;
+
+        for (int k = i + 2; k < url.length(); k++)
+        {
+            if (url[k] == '/')
+            {
+                subdomains.push_back(temp);
+                temp = "";
+            }
+            else
+            {
+                temp += url[k];
+                if (k + 1 == url.length())
+                    subdomains.push_back(temp);
+            }
+        }
+    }
+};
+
+class DNS
+{
+    shared_ptr<Tree<string, string>> domainTree;
+    void getDomainPagesHelper(shared_ptr<node<string,string>> currDomain, string currentPath, shared_ptr<vector<string>> results);
+
+public:
+    DNS();
+    void addWebpage(string url);
+    int numRegisteredTLDs();
+    vector<shared_ptr<Webpage>> getDomainPages(string domain);
+    vector<shared_ptr<Webpage>> getAllWebpages(string TLD);
+    shared_ptr<Tree<string, string>> getDomainTree();
+    string findTLD(string domain);
+    void generateOutput(vector<shared_ptr<Webpage>> pages);
+};
+
+#endif
