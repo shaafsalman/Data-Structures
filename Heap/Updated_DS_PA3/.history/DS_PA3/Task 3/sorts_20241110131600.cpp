@@ -10,9 +10,6 @@
 
 
 // Optimized Insertion Sort Implementation with Binary Search
-
-
-
 vector<long> InsertionSort(vector<long> nums) {
     int n = nums.size();
     

@@ -10,27 +10,24 @@
 
 
 // Optimized Insertion Sort Implementation with Binary Search
-
-
-
 vector<long> InsertionSort(vector<long> nums) {
     int n = nums.size();
-    
-    // Using a gap sequence for improved insertion sorting (gap-based)
-    for (int gap = n / 2; gap > 0; gap /= 2) {
-        for (int i = gap; i < n; i++) {
-            long key = nums[i];
-            int j = i;
-            
-            // Shift elements forward while they're greater than the key
-            while (j >= gap && nums[j - gap] > key) {
-                nums[j] = nums[j - gap];
-                j -= gap;
-            }
-            nums[j] = key;
-        }
-    }
+    for (int i = 1; i < n; i++) {
+        long key = nums[i];
+        int j = i - 1;
 
+        // Avoid unnecessary comparisons by checking if the key is already in the right place
+        if (nums[j] <= key) {
+            continue;  // Skip the rest of the loop if the element is already in place
+        }
+
+        // Shift elements to the right in bulk
+        while (j >= 0 && nums[j] > key) {
+            nums[j + 1] = nums[j];
+            j--;
+        }
+        nums[j + 1] = key;  
+    }
     return nums;
 }
 

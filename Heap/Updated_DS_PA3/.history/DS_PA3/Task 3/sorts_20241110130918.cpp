@@ -8,33 +8,22 @@
 // Binary Search Helper Function
 // Binary Search to find the insertion position
 
-
-// Optimized Insertion Sort Implementation with Binary Search
-
-
-
 vector<long> InsertionSort(vector<long> nums) {
-    int n = nums.size();
-    
-    // Using a gap sequence for improved insertion sorting (gap-based)
-    for (int gap = n / 2; gap > 0; gap /= 2) {
-        for (int i = gap; i < n; i++) {
-            long key = nums[i];
-            int j = i;
-            
-            // Shift elements forward while they're greater than the key
-            while (j >= gap && nums[j - gap] > key) {
-                nums[j] = nums[j - gap];
-                j -= gap;
-            }
-            nums[j] = key;
-        }
-    }
+    for (int i = 1; i < nums.size(); i++) {
+        long key = nums[i];
+        int j = i - 1;
 
+        // Shift elements to the right to make space for the key
+        while (j >= 0 && nums[j] > key) {
+            nums[j + 1] = nums[j];
+            j--;
+        }
+
+        // Insert the key into its correct position
+        nums[j + 1] = key;
+    }
     return nums;
 }
-
-
 
 
 
