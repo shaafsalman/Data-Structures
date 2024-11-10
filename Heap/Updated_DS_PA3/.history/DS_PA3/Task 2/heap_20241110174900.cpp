@@ -4,6 +4,7 @@
 #include "heap.h"
 #include <memory>
 #include <climits>
+#include <iostream>
 
 using namespace std;
 
@@ -16,48 +17,45 @@ MinHeap::MinHeap(int cap) : capacity(cap), heap_size(0)
 
 int MinHeap::parent(int i)
 {
-    if (i <= 0 || i >= heap_size)
-        return -1;
-    return (i - 1) / 2;
+    return (i > 0 && i < heap_size) ? (i - 1) / 2 : -1;  // Return -1 for out-of-range
 }
 
 int MinHeap::left(int i)
 {
     int l = 2 * i + 1;
-    if (l >= heap_size)
-        return -1;
-    return l;
+    return (l < heap_size) ? l : -1;  // Return -1 if left child is out of range
 }
 
 int MinHeap::right(int i)
 {
     int r = 2 * i + 2;
-    if (r >= heap_size)
-        return -1;
-    return r;
+    return (r < heap_size) ? r : -1;  // Return -1 if right child is out of range
 }
 
 int MinHeap::getMin()
 {
     if (heap_size <= 0)
-        return INT_MAX;
+    {
+        cout << "Heap is empty." << endl;
+        return INT_MAX;  // Use INT_MAX as an error indicator for empty heap
+    }
     return harr.get()[0];
 }
 
 void MinHeap::insertKey(int k)
 {
     if (heap_size == capacity)
+    {
+        cout << "Heap overflow, cannot insert key." << endl;
         return;
+    }
 
-    int i = heap_size;
-    heap_size++;
+    int i = heap_size++;
     harr.get()[i] = k;
 
     while (i != 0 && harr.get()[parent(i)] > harr.get()[i])
     {
-        int temp = harr.get()[i];
-        harr.get()[i] = harr.get()[parent(i)];
-        harr.get()[parent(i)] = temp;
+        swap(harr.get()[i], harr.get()[parent(i)]);
         i = parent(i);
     }
 }
@@ -65,8 +63,11 @@ void MinHeap::insertKey(int k)
 int MinHeap::extractMin()
 {
     if (heap_size <= 0)
-        return INT_MAX;
-
+    {
+        cout << "Heap underflow, cannot extract minimum." << endl;
+        return INT_MAX;  // Use INT_MAX as an error indicator for empty heap
+    }
+    
     if (heap_size == 1)
     {
         heap_size--;
@@ -74,8 +75,7 @@ int MinHeap::extractMin()
     }
 
     int root = harr.get()[0];
-    harr.get()[0] = harr.get()[heap_size - 1];
-    heap_size--;
+    harr.get()[0] = harr.get()[--heap_size];
     minHeapify(harr.get(), heap_size, 0);
 
     return root;
@@ -84,14 +84,15 @@ int MinHeap::extractMin()
 void MinHeap::decreaseKey(int i, int new_val)
 {
     if (i < 0 || i >= heap_size)
+    {
+        cout << "Invalid index for decreaseKey." << endl;
         return;
+    }
 
     harr.get()[i] = new_val;
     while (i != 0 && harr.get()[parent(i)] > harr.get()[i])
     {
-        int temp = harr.get()[i];
-        harr.get()[i] = harr.get()[parent(i)];
-        harr.get()[parent(i)] = temp;
+        swap(harr.get()[i], harr.get()[parent(i)]);
         i = parent(i);
     }
 }
@@ -99,10 +100,16 @@ void MinHeap::decreaseKey(int i, int new_val)
 void MinHeap::deleteKey(int i)
 {
     if (i < 0 || i >= heap_size)
-        return;
+    {
+        cout << "Attempting to delete at index " << i << " (heap_size: " << heap_size << ") - Invalid index.\n";
+        return;  // Return without doing anything if the index is out of range
+    }
 
+    // cout << "deleteKey called with index " << i << " (heap_size: " << heap_size << ")\n";
+
+    // Decrease the key to INT_MIN and extract the minimum
     decreaseKey(i, INT_MIN);
-    extractMin();
+    extractMin();  // This reduces the heap_size by 1
 }
 
 shared_ptr<int> MinHeap::getHeap()
@@ -123,9 +130,7 @@ void minHeapify(int* harr, int heap_size, int i)
 
     if (smallest != i)
     {
-        int temp = harr[i];
-        harr[i] = harr[smallest];
-        harr[smallest] = temp;
+        swap(harr[i], harr[smallest]);
         minHeapify(harr, heap_size, smallest);
     }
 }

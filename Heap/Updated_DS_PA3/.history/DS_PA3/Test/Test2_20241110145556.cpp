@@ -33,6 +33,9 @@ int test_delete(shared_ptr<MinHeap> heap, vector<int> ref_vec)
 
 	int counter = 0;
 	int len = ref_vec.size();
+
+
+	
 	shared_ptr<int> head = heap->getHeap();
 
 	for (int i = 0; i < len; i++)
@@ -50,7 +53,7 @@ int test_delete(shared_ptr<MinHeap> heap, vector<int> ref_vec)
 
 int test_extractMin(shared_ptr<MinHeap> heap, vector<int> ref_vec)
 {
-	cout << "Testing ExtractMin: ";
+	cout << "Testing ExtractMin: \n";
 
 	int counter = 0;
 	sort(ref_vec.begin(), ref_vec.end());
@@ -62,6 +65,10 @@ int test_extractMin(shared_ptr<MinHeap> heap, vector<int> ref_vec)
 		{
 			counter++;
 		}
+		 else
+        {
+            std::cout << "Mismatch: Expected " << ref_vec[i] << ", got " << heap->extractMin() << std::endl;
+        }
 	}
 
 	int score = (counter / ref_vec.size()) * 2;

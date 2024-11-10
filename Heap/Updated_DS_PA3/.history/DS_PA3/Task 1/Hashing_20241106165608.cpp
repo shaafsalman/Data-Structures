@@ -7,6 +7,7 @@ using namespace std;
 template <typename T>
 HashTable<T>::HashTable(CollisionHandling strategy) : collisionStrategy(strategy)
 {
+    // Initialize the hash table based on the selected collision strategy
     if (strategy == SEPARATE_CHAINING)
         chainingTable.resize(TABLE_SIZE); // For separate chaining (vector of vectors)
     else
@@ -30,7 +31,7 @@ int HashTable<T>::hashFunction1(int key)
 template <typename T>
 int HashTable<T>::hashFunction2(int key)
 {
-    return 1 + (key % (TABLE_SIZE - 1));
+    return 1 + (key % (TABLE_SIZE - 1)); // Ensures step size is non-zero
 }
 
 // ============================ Linear Probing ============================ //
@@ -276,11 +277,11 @@ template <typename T>
 T HashTable<T>::searchSeparateChaining(int key)
 {
     int index = hashFunction1(key);
-    for (int i = 0; i < chainingTable[index].size(); i++)
+    for (const auto &pair : chainingTable[index])
     {
-        if (chainingTable[index][i].key == key)
+        if (pair.key == key)
         {
-            return chainingTable[index][i].value;
+            return pair.value;
         }
     }
     cout << "Key " << key << " not found" << endl;
@@ -292,11 +293,11 @@ template <typename T>
 void HashTable<T>::removeSeparateChaining(int key)
 {
     int index = hashFunction1(key);
-    for (int i = 0; i < chainingTable[index].size(); i++)
+    for (auto it = chainingTable[index].begin(); it != chainingTable[index].end(); ++it)
     {
-        if (chainingTable[index][i].key == key)
+        if (it->key == key)
         {
-            chainingTable[index].erase(chainingTable[index].begin() + i);
+            chainingTable[index].erase(it);
             cout << "Key " << key << " removed" << endl;
             return;
         }
@@ -310,28 +311,38 @@ void HashTable<T>::removeSeparateChaining(int key)
 template <typename T>
 void HashTable<T>::insert(int key, T value)
 {
-    if (collisionStrategy == LINEAR_PROBING)
-        insertLinearProbing(key, value);
-    else if (collisionStrategy == QUADRATIC_PROBING)
-        insertQuadraticProbing(key, value);
-    else if (collisionStrategy == DOUBLE_HASHING)
-        insertDoubleHashing(key, value);
-    else if (collisionStrategy == SEPARATE_CHAINING)
-        insertSeparateChaining(key, value);
+    switch (collisionStrategy)
+    {
+        case LINEAR_PROBING:
+            insertLinearProbing(key, value);
+            break;
+        case QUADRATIC_PROBING:
+            insertQuadraticProbing(key, value);
+            break;
+        case DOUBLE_HASHING:
+            insertDoubleHashing(key, value);
+            break;
+        case SEPARATE_CHAINING:
+            insertSeparateChaining(key, value);
+            break;
+    }
 }
 
 // General search function (chooses method based on collision strategy)
 template <typename T>
 T HashTable<T>::search(int key)
 {
-    if (collisionStrategy == LINEAR_PROBING)
-        return searchLinearProbing(key);
-    else if (collisionStrategy == QUADRATIC_PROBING)
-        return searchQuadraticProbing(key);
-    else if (collisionStrategy == DOUBLE_HASHING)
-        return searchDoubleHashing(key);
-    else if (collisionStrategy == SEPARATE_CHAINING)
-        return searchSeparateChaining(key);
+    switch (collisionStrategy)
+    {
+        case LINEAR_PROBING:
+            return searchLinearProbing(key);
+        case QUADRATIC_PROBING:
+            return searchQuadraticProbing(key);
+        case DOUBLE_HASHING:
+            return searchDoubleHashing(key);
+        case SEPARATE_CHAINING:
+            return searchSeparateChaining(key);
+    }
     return T();
 }
 
@@ -339,14 +350,21 @@ T HashTable<T>::search(int key)
 template <typename T>
 void HashTable<T>::remove(int key)
 {
-    if (collisionStrategy == LINEAR_PROBING)
-        removeLinearProbing(key);
-    else if (collisionStrategy == QUADRATIC_PROBING)
-        removeQuadraticProbing(key);
-    else if (collisionStrategy == DOUBLE_HASHING)
-        removeDoubleHashing(key);
-    else if (collisionStrategy == SEPARATE_CHAINING)
-        removeSeparateChaining(key);
+    switch (collisionStrategy)
+    {
+        case LINEAR_PROBING:
+            removeLinearProbing(key);
+            break;
+        case QUADRATIC_PROBING:
+            removeQuadraticProbing(key);
+            break;
+        case DOUBLE_HASHING:
+            removeDoubleHashing(key);
+            break;
+        case SEPARATE_CHAINING:
+            removeSeparateChaining(key);
+            break;
+    }
 }
 
 // Print the contents of the hash table (for debugging purposes)
@@ -358,9 +376,9 @@ void HashTable<T>::printTable()
         for (int i = 0; i < TABLE_SIZE; i++)
         {
             cout << "Bucket " << i << ": ";
-            for (int j = 0; j < chainingTable[i].size(); j++)
+            for (const auto &pair : chainingTable[i])
             {
-                cout << "[" << chainingTable[i][j].key << ": " << chainingTable[i][j].value << "] ";
+                cout << "[" << pair.key << ": " << pair.value << "] ";
             }
             cout << endl;
         }

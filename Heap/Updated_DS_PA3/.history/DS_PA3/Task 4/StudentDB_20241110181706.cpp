@@ -1,10 +1,11 @@
 #include "StudentDB.h"
 
 // Constructor for StudentDatabase
-StudentDatabase::StudentDatabase() : LUMS(make_shared<node<int, vector<Tree<int, Student>>>>(0, vector<Tree<int, Student>>())) {
-    read_csv("students.csv"); 
-
+StudentDatabase::StudentDatabase() {
+    LUMS = make_shared<node<int, vector<Tree<int, Student>>>>(0, vector<Tree<int, Student>>());
+    read_csv("students.csv");
 }
+
 // Function to add a student to the database
 void StudentDatabase::addStudent(const Student &student) {
     int batch = student.batch;
