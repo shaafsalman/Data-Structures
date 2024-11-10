@@ -6,21 +6,41 @@
 
 //===========================Sorting Function Implementations===========================
 // Binary Search Helper Function
-// Binary Search to find the insertion position
+int binarySearch(const vector<long>& arr, int start, int end, long key) {
+    while (start < end) {
+        int mid = start + (end - start) / 2;
+        if (key < arr[mid]) {
+            end = mid;  // We want to move towards the left part
+        } else {
+            start = mid + 1;  // We want to move towards the right part
+        }
+    }
+    return start;  // Return the insertion position
+}
 
+// Optimized Insertion Sort Implementation with Binary Search
 vector<long> InsertionSort(vector<long> nums) {
     for (int i = 1; i < nums.size(); i++) {
         long key = nums[i];
         int j = i - 1;
 
-        while (j >= 0 && nums[j] > key) {
+        // Use binary search to find the right insertion position
+        int pos = binarySearch(nums, 0, j, key);
+
+        // Shift all elements from position to the right to make space for key
+        while (j >= pos) {
             nums[j + 1] = nums[j];
             j--;
         }
-        nums[j + 1] = key;  
+
+        // Insert the key at the correct position
+        nums[j + 1] = key;
     }
     return nums;
 }
+
+
+
 
 
 

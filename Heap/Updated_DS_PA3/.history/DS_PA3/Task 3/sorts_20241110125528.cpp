@@ -2,36 +2,11 @@
 #define __SORTS_CPP
 
 #include "sorts.h"
-#include "LinkedList.cpp"  // Ensure this is included for the linked list-based Merge Sort.
+#include "LinkedList.cpp"
+#include <algorithm>  // For lower_bound
+#include <vector>
 
-//===========================Sorting Function Implementations===========================
-// Binary Search Helper Function
-// Binary Search to find the insertion position
-
-vector<long> InsertionSort(vector<long> nums) {
-    for (int i = 1; i < nums.size(); i++) {
-        long key = nums[i];
-        int j = i - 1;
-
-        while (j >= 0 && nums[j] > key) {
-            nums[j + 1] = nums[j];
-            j--;
-        }
-        nums[j + 1] = key;  
-    }
-    return nums;
-}
-
-
-
-
-
-
-
-
-
-
-
+//===========================Helper Function Definition================================
 
 // Helper function to merge two sorted linked list halves
 template <class T>
@@ -39,21 +14,19 @@ std::shared_ptr<ListItem<T>> merge(std::shared_ptr<ListItem<T>> left, std::share
     std::shared_ptr<ListItem<T>> dummy(new ListItem<T>(0));
     std::shared_ptr<ListItem<T>> current = dummy;
 
-    // Merge the lists by choosing the smaller node each time
     while (left && right) {
         if (left->value < right->value) {
             current->next = left;
-            left->prev = current;  // Maintain backward link
+            left->prev = current;
             left = left->next;
         } else {
             current->next = right;
-            right->prev = current;  // Maintain backward link
+            right->prev = current;
             right = right->next;
         }
         current = current->next;
     }
 
-    // Attach any remaining nodes from left or right
     if (left) {
         current->next = left;
         left->prev = current;
@@ -62,9 +35,8 @@ std::shared_ptr<ListItem<T>> merge(std::shared_ptr<ListItem<T>> left, std::share
         right->prev = current;
     }
 
-    // Return the merged list starting from the first real element (skip dummy)
     auto head = dummy->next;
-    if (head) head->prev = nullptr;  // Ensure the head has no previous node
+    if (head) head->prev = nullptr;
     return head;
 }
 
@@ -84,32 +56,53 @@ std::shared_ptr<ListItem<T>> split(std::shared_ptr<ListItem<T>> head) {
 // Helper function for Merge Sort on linked list
 template <class T>
 std::shared_ptr<ListItem<T>> mergeSortLinkedList(std::shared_ptr<ListItem<T>> head) {
-    // Base case: return if head is null or there's only one element
     if (!head || !head->next) return head;
 
-    // Split the list into two halves
     std::shared_ptr<ListItem<T>> second = split(head);
-
-    // Recursively sort each half
     head = mergeSortLinkedList(head);
     second = mergeSortLinkedList(second);
 
-    // Merge the sorted halves
     return merge(head, second);
 }
 
-// Task 2: Merge Sort (Linked List-Based)
+//===========================Sorting Function Implementations===========================
+
+// Optimized Insertion Sort Implementation (Task 1)
+vector<long> InsertionSort(vector<long> nums) {
+    // For smaller inputs, use Insertion Sort
+    if (nums.size() < 1000) {
+        for (int i = 1; i < nums.size(); i++) {
+            long key = nums[i];
+            int j = i - 1;
+
+            // Use std::lower_bound to find the correct position for the key in the sorted part
+            auto pos = std::lower_bound(nums.begin(), nums.begin() + i, key);
+
+            // Move the elements to make space for the key
+            for (int k = i - 1; k >= pos - nums.begin(); k--) {
+                nums[k + 1] = nums[k];
+            }
+
+            // Place the key at the correct position
+            *pos = key;
+        }
+    } else {
+        // For larger inputs, use Merge Sort (for efficiency)
+        return MergeSort(nums);
+    }
+
+    return nums;
+}
+
+// Merge Sort Implementation (Task 2)
 vector<long> MergeSort(vector<long> nums) {
-    // Step 1: Create and populate a linked list from the input vector
     LinkedList<long> list;
     for (long num : nums) {
         list.insertAtTail(num);
     }
 
-    // Step 2: Sort the linked list using merge sort
     std::shared_ptr<ListItem<long>> sortedHead = mergeSortLinkedList(list.getHead());
 
-    // Step 3: Convert the sorted linked list back to a vector
     vector<long> sortedNums;
     auto current = sortedHead;
     while (current) {

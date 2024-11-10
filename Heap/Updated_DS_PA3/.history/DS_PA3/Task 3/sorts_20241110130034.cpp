@@ -6,33 +6,48 @@
 
 //===========================Sorting Function Implementations===========================
 // Binary Search Helper Function
-// Binary Search to find the insertion position
+int binarySearch(const std::vector<long>& arr, int start, int end, long key) {
+    while (start < end) {
+        int mid = start + (end - start) / 2;
+        if (key < arr[mid]) {
+            end = mid;
+        } else {
+            start = mid + 1;
+        }
+    }
+    return start;
+}
 
+// Optimized Insertion Sort Implementation with Binary Search
 vector<long> InsertionSort(vector<long> nums) {
     for (int i = 1; i < nums.size(); i++) {
         long key = nums[i];
         int j = i - 1;
 
-        while (j >= 0 && nums[j] > key) {
+        // Find the position where the key should be inserted using binary search
+        int pos = binarySearch(nums, 0, j, key);
+
+        // Debug: Print the key and position found
+        std::cout << "Inserting " << key << " at position " << pos << std::endl;
+
+        // Shift elements to the right to create space for the key
+        while (j >= pos) {
             nums[j + 1] = nums[j];
             j--;
         }
-        nums[j + 1] = key;  
+
+        // Insert the key at the found position
+        nums[j + 1] = key;
+
+        // Debug: Print the current state of the array after insertion
+        std::cout << "Array after inserting " << key << ": ";
+        for (long num : nums) {
+            std::cout << num << " ";
+        }
+        std::cout << std::endl;
     }
     return nums;
 }
-
-
-
-
-
-
-
-
-
-
-
-
 // Helper function to merge two sorted linked list halves
 template <class T>
 std::shared_ptr<ListItem<T>> merge(std::shared_ptr<ListItem<T>> left, std::shared_ptr<ListItem<T>> right) {

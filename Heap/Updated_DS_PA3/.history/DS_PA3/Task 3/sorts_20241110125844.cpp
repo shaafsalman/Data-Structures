@@ -5,33 +5,36 @@
 #include "LinkedList.cpp"  // Ensure this is included for the linked list-based Merge Sort.
 
 //===========================Sorting Function Implementations===========================
-// Binary Search Helper Function
-// Binary Search to find the insertion position
 
+
+int binarySearch(const std::vector<long>& arr, int start, int end, long key) {
+    while (start < end) {
+        int mid = start + (end - start) / 2;
+        if (key < arr[mid]) {
+            end = mid;
+        } else {
+            start = mid + 1;
+        }
+    }
+    return start;
+}
+
+
+// Task 1: Insertion Sort (Array-Based)
 vector<long> InsertionSort(vector<long> nums) {
     for (int i = 1; i < nums.size(); i++) {
         long key = nums[i];
         int j = i - 1;
 
+        // Move elements of nums[0..i-1], that are greater than key, to one position ahead
         while (j >= 0 && nums[j] > key) {
             nums[j + 1] = nums[j];
             j--;
         }
-        nums[j + 1] = key;  
+        nums[j + 1] = key;
     }
     return nums;
 }
-
-
-
-
-
-
-
-
-
-
-
 
 // Helper function to merge two sorted linked list halves
 template <class T>

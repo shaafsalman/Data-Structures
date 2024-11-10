@@ -2,40 +2,14 @@
 #define __SORTS_CPP
 
 #include "sorts.h"
-#include "LinkedList.cpp"  // Ensure this is included for the linked list-based Merge Sort.
+#include "LinkedList.cpp"
 
-//===========================Sorting Function Implementations===========================
-// Binary Search Helper Function
-// Binary Search to find the insertion position
-
-vector<long> InsertionSort(vector<long> nums) {
-    for (int i = 1; i < nums.size(); i++) {
-        long key = nums[i];
-        int j = i - 1;
-
-        while (j >= 0 && nums[j] > key) {
-            nums[j + 1] = nums[j];
-            j--;
-        }
-        nums[j + 1] = key;  
-    }
-    return nums;
-}
-
-
-
-
-
-
-
-
-
-
-
+//===========================Helper Function Definition================================
 
 // Helper function to merge two sorted linked list halves
 template <class T>
 std::shared_ptr<ListItem<T>> merge(std::shared_ptr<ListItem<T>> left, std::shared_ptr<ListItem<T>> right) {
+    // Create a temporary dummy node to start the merged list
     std::shared_ptr<ListItem<T>> dummy(new ListItem<T>(0));
     std::shared_ptr<ListItem<T>> current = dummy;
 
@@ -64,7 +38,7 @@ std::shared_ptr<ListItem<T>> merge(std::shared_ptr<ListItem<T>> left, std::share
 
     // Return the merged list starting from the first real element (skip dummy)
     auto head = dummy->next;
-    if (head) head->prev = nullptr;  // Ensure the head has no previous node
+    if (head) head->prev = nullptr; // Ensure the head has no previous node
     return head;
 }
 
@@ -98,7 +72,25 @@ std::shared_ptr<ListItem<T>> mergeSortLinkedList(std::shared_ptr<ListItem<T>> he
     return merge(head, second);
 }
 
-// Task 2: Merge Sort (Linked List-Based)
+//===========================Sorting Function Implementations===========================
+
+// Insertion Sort Implementation (Task 1)
+vector<long> InsertionSort(vector<long> nums) {
+    for (int i = 1; i < nums.size(); i++) {
+        long key = nums[i];
+        int j = i - 1;
+
+        // Move elements of nums[0..i-1], that are greater than key, to one position ahead
+        while (j >= 0 && nums[j] > key) {
+            nums[j + 1] = nums[j];
+            j--;
+        }
+        nums[j + 1] = key;
+    }
+    return nums;
+}
+
+// Merge Sort Implementation (Task 2)
 vector<long> MergeSort(vector<long> nums) {
     // Step 1: Create and populate a linked list from the input vector
     LinkedList<long> list;
