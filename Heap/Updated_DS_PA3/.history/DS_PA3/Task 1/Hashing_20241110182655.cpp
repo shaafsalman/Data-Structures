@@ -19,7 +19,6 @@ HashTable<T>::~HashTable() {}
 
 // ============================ Hash Functions ============================ //
 
-
 // Primary hash function (common to all methods)
 template <typename T>
 int HashTable<T>::hashFunction1(int key)
@@ -31,9 +30,8 @@ int HashTable<T>::hashFunction1(int key)
 template <typename T>
 int HashTable<T>::hashFunction2(int key)
 {
-    return 1 + (key % (TABLE_SIZE - 1)); // Ensures step size is non-zero
+    return 1 + (key % (TABLE_SIZE - 1));
 }
-
 
 // ============================ Linear Probing ============================ //
 
@@ -41,8 +39,6 @@ int HashTable<T>::hashFunction2(int key)
 template <typename T>
 void HashTable<T>::insertLinearProbing(int key, T value)
 {
-    // TODO: Implement insert using linear probing
-
     int index = hashFunction1(key);
     int startIndex = index;
 
@@ -65,8 +61,6 @@ void HashTable<T>::insertLinearProbing(int key, T value)
 template <typename T>
 T HashTable<T>::searchLinearProbing(int key)
 {
-    // TODO: Implement search using linear probing
-
     int index = hashFunction1(key);
     int startIndex = index;
 
@@ -90,8 +84,6 @@ T HashTable<T>::searchLinearProbing(int key)
 template <typename T>
 void HashTable<T>::removeLinearProbing(int key)
 {
-    // TODO: Implement remove using linear probing
-
     int index = hashFunction1(key);
     int startIndex = index;
 

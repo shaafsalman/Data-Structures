@@ -19,7 +19,6 @@ HashTable<T>::~HashTable() {}
 
 // ============================ Hash Functions ============================ //
 
-
 // Primary hash function (common to all methods)
 template <typename T>
 int HashTable<T>::hashFunction1(int key)
@@ -31,9 +30,8 @@ int HashTable<T>::hashFunction1(int key)
 template <typename T>
 int HashTable<T>::hashFunction2(int key)
 {
-    return 1 + (key % (TABLE_SIZE - 1)); // Ensures step size is non-zero
+    return 1 + (key % (TABLE_SIZE - 1));
 }
-
 
 // ============================ Linear Probing ============================ //
 

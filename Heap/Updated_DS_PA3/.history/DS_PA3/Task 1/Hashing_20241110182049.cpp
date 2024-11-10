@@ -19,7 +19,6 @@ HashTable<T>::~HashTable() {}
 
 // ============================ Hash Functions ============================ //
 
-
 // Primary hash function (common to all methods)
 template <typename T>
 int HashTable<T>::hashFunction1(int key)
@@ -31,9 +30,8 @@ int HashTable<T>::hashFunction1(int key)
 template <typename T>
 int HashTable<T>::hashFunction2(int key)
 {
-    return 1 + (key % (TABLE_SIZE - 1)); // Ensures step size is non-zero
+    return 1 + (key % (TABLE_SIZE - 1));
 }
-
 
 // ============================ Linear Probing ============================ //
 
@@ -41,8 +39,6 @@ int HashTable<T>::hashFunction2(int key)
 template <typename T>
 void HashTable<T>::insertLinearProbing(int key, T value)
 {
-    // TODO: Implement insert using linear probing
-
     int index = hashFunction1(key);
     int startIndex = index;
 
@@ -51,7 +47,7 @@ void HashTable<T>::insertLinearProbing(int key, T value)
         index = (index + 1) % TABLE_SIZE;
         if (index == startIndex)
         {
-            // cout << "Hash table is full! cant insert  " << key << endl;
+            // cout << "Hash table is full, cannot insert key " << key << endl;
             return;
         }
     }
@@ -65,8 +61,6 @@ void HashTable<T>::insertLinearProbing(int key, T value)
 template <typename T>
 T HashTable<T>::searchLinearProbing(int key)
 {
-    // TODO: Implement search using linear probing
-
     int index = hashFunction1(key);
     int startIndex = index;
 
@@ -90,8 +84,6 @@ T HashTable<T>::searchLinearProbing(int key)
 template <typename T>
 void HashTable<T>::removeLinearProbing(int key)
 {
-    // TODO: Implement remove using linear probing
-
     int index = hashFunction1(key);
     int startIndex = index;
 
@@ -102,7 +94,7 @@ void HashTable<T>::removeLinearProbing(int key)
             probingTable[index].isEmpty = true;
             probingTable[index].key = 0;
             probingTable[index].value = T();
-            // cout << "Key " << key << " removed" << endl;
+            cout << "Key " << key << " removed" << endl;
             return;
         }
         index = (index + 1) % TABLE_SIZE;
@@ -111,7 +103,7 @@ void HashTable<T>::removeLinearProbing(int key)
             break;
         }
     }
-    // cout << "Key " << key << " not found 404" << endl;
+    cout << "Key " << key << " not found for removal" << endl;
 }
 
 // ============================ Quadratic Probing ============================ //
@@ -120,8 +112,6 @@ void HashTable<T>::removeLinearProbing(int key)
 template <typename T>
 void HashTable<T>::insertQuadraticProbing(int key, T value)
 {
-    // TODO: Implement insert using quadratic probing
-
     int index = hashFunction1(key);
     int i = 0;
     int startIndex = index;
@@ -132,7 +122,7 @@ void HashTable<T>::insertQuadraticProbing(int key, T value)
         index = (startIndex + i * i) % TABLE_SIZE;
         if (index == startIndex)
         {
-            // cout << "Hash table is full! cant insert " << key << endl;
+            cout << "Hash table is full, cannot insert key " << key << endl;
             return;
         }
     }
@@ -146,8 +136,6 @@ void HashTable<T>::insertQuadraticProbing(int key, T value)
 template <typename T>
 T HashTable<T>::searchQuadraticProbing(int key)
 {
-    // TODO: Implement search using quadratic probing
-
     int index = hashFunction1(key);
     int i = 0;
     int startIndex = index;
@@ -173,8 +161,6 @@ T HashTable<T>::searchQuadraticProbing(int key)
 template <typename T>
 void HashTable<T>::removeQuadraticProbing(int key)
 {
-    // TODO: Implement remove using quadratic probing
-    
     int index = hashFunction1(key);
     int i = 0;
     int startIndex = index;
@@ -186,7 +172,7 @@ void HashTable<T>::removeQuadraticProbing(int key)
             probingTable[index].isEmpty = true;
             probingTable[index].key = 0;
             probingTable[index].value = T();
-            // cout << "Key " << key << " removed" << endl;
+            cout << "Key " << key << " removed" << endl;
             return;
         }
         i++;
@@ -196,7 +182,7 @@ void HashTable<T>::removeQuadraticProbing(int key)
             break;
         }
     }
-    // cout << "Key " << key << " not found for removal" << endl;
+    cout << "Key " << key << " not found for removal" << endl;
 }
 
 // ============================ Double Hashing ============================ //
@@ -205,8 +191,6 @@ void HashTable<T>::removeQuadraticProbing(int key)
 template <typename T>
 void HashTable<T>::insertDoubleHashing(int key, T value)
 {
-        // TODO: Implement insert using double hashing
-
     int index = hashFunction1(key);
     int step = hashFunction2(key);
     int startIndex = index;
@@ -216,7 +200,7 @@ void HashTable<T>::insertDoubleHashing(int key, T value)
         index = (index + step) % TABLE_SIZE;
         if (index == startIndex)
         {
-            cout << "Hash table is full! cant insert" << key << endl;
+            cout << "Hash table is full, cannot insert key " << key << endl;
             return;
         }
     }
@@ -229,9 +213,7 @@ void HashTable<T>::insertDoubleHashing(int key, T value)
 // Search using double hashing
 template <typename T>
 T HashTable<T>::searchDoubleHashing(int key)
-{    
-    // TODO: Implement search using double hashing
-
+{
     int index = hashFunction1(key);
     int step = hashFunction2(key);
     int startIndex = index;
@@ -248,7 +230,7 @@ T HashTable<T>::searchDoubleHashing(int key)
             break;
         }
     }
-    // cout << "Key " << key << " not found" << endl;
+    cout << "Key " << key << " not found" << endl;
     return T();
 }
 
@@ -256,8 +238,6 @@ T HashTable<T>::searchDoubleHashing(int key)
 template <typename T>
 void HashTable<T>::removeDoubleHashing(int key)
 {
-    // TODO: Implement remove using double hashing
-        
     int index = hashFunction1(key);
     int step = hashFunction2(key);
     int startIndex = index;
@@ -269,7 +249,7 @@ void HashTable<T>::removeDoubleHashing(int key)
             probingTable[index].isEmpty = true;
             probingTable[index].key = 0;
             probingTable[index].value = T();
-            // cout << "Key " << key << " removed" << endl;
+            cout << "Key " << key << " removed" << endl;
             return;
         }
         index = (index + step) % TABLE_SIZE;
@@ -278,7 +258,7 @@ void HashTable<T>::removeDoubleHashing(int key)
             break;
         }
     }
-    // cout << "Key " << key << " not found 404" << endl;
+    cout << "Key " << key << " not found for removal" << endl;
 }
 
 // ============================ Separate Chaining ============================ //
@@ -287,8 +267,6 @@ void HashTable<T>::removeDoubleHashing(int key)
 template <typename T>
 void HashTable<T>::insertSeparateChaining(int key, T value)
 {
-    // TODO: Implement insert using separate chaining
-    
     int index = hashFunction1(key);
     chainingTable[index].push_back(KeyValue(key, value, false));
 }
@@ -297,8 +275,6 @@ void HashTable<T>::insertSeparateChaining(int key, T value)
 template <typename T>
 T HashTable<T>::searchSeparateChaining(int key)
 {
-    // TODO: Implement search using separate chaining
-
     int index = hashFunction1(key);
     for (int i = 0; i < chainingTable[index].size(); i++)
     {
@@ -315,19 +291,17 @@ T HashTable<T>::searchSeparateChaining(int key)
 template <typename T>
 void HashTable<T>::removeSeparateChaining(int key)
 {
-    // TODO: Implement remove using separate chaining
-
     int index = hashFunction1(key);
     for (int i = 0; i < chainingTable[index].size(); i++)
     {
         if (chainingTable[index][i].key == key)
         {
             chainingTable[index].erase(chainingTable[index].begin() + i);
-            // cout << "Key " << key << " removed" << endl;
+            cout << "Key " << key << " removed" << endl;
             return;
         }
     }
-    // cout << "Key " << key << " not found for removal" << endl;
+    cout << "Key " << key << " not found for removal" << endl;
 }
 
 // ============================ General Interface ============================ //
@@ -336,9 +310,6 @@ void HashTable<T>::removeSeparateChaining(int key)
 template <typename T>
 void HashTable<T>::insert(int key, T value)
 {
-    // TODO: Implement general insert function
-
-
     if (collisionStrategy == LINEAR_PROBING)
         insertLinearProbing(key, value);
     else if (collisionStrategy == QUADRATIC_PROBING)
@@ -353,9 +324,6 @@ void HashTable<T>::insert(int key, T value)
 template <typename T>
 T HashTable<T>::search(int key)
 {
-        // TODO: Implement general search function
-
-
     if (collisionStrategy == LINEAR_PROBING)
         return searchLinearProbing(key);
     else if (collisionStrategy == QUADRATIC_PROBING)
@@ -364,7 +332,6 @@ T HashTable<T>::search(int key)
         return searchDoubleHashing(key);
     else if (collisionStrategy == SEPARATE_CHAINING)
         return searchSeparateChaining(key);
-    
     return T();
 }
 
@@ -372,8 +339,6 @@ T HashTable<T>::search(int key)
 template <typename T>
 void HashTable<T>::remove(int key)
 {
-    // TODO: Implement general remove function
-   
     if (collisionStrategy == LINEAR_PROBING)
         removeLinearProbing(key);
     else if (collisionStrategy == QUADRATIC_PROBING)
@@ -388,8 +353,6 @@ void HashTable<T>::remove(int key)
 template <typename T>
 void HashTable<T>::printTable()
 {
-    // TODO: Implement print table function
-   
     if (collisionStrategy == SEPARATE_CHAINING)
     {
         for (int i = 0; i < TABLE_SIZE; i++)
