@@ -1,11 +1,18 @@
 #include "StudentDB.h"
 
-// Constructor for StudentDatabase
 StudentDatabase::StudentDatabase() : LUMS(make_shared<node<int, vector<Tree<int, Student>>>>(0, vector<Tree<int, Student>>())) {
-    read_csv("students.csv"); 
-
+    read_csv("students.csv");
 }
-// Function to add a student to the database
+
+int getSchoolIndex(const string &schoolCode) {
+    //analyzed from csv
+    if (schoolCode == "02") return 0;
+    else if (schoolCode == "09") return 1;
+    else if (schoolCode == "10") return 2;
+        else if (schoolCode == "11") return 3;
+    return 3; 
+}
+
 void StudentDatabase::addStudent(const Student &student) {
     int batch = student.batch;
     int schoolRollNumber = student.schoolRollNumber;
@@ -23,10 +30,7 @@ void StudentDatabase::addStudent(const Student &student) {
         LUMS.insertChild(batchNode, 0);
     }
 
-    int schoolIndex = 3;
-    if (schoolCode == "01") schoolIndex = 0;
-    else if (schoolCode == "02") schoolIndex = 1;
-    else if (schoolCode == "03") schoolIndex = 2;
+    int schoolIndex = getSchoolIndex(schoolCode);
 
     Tree<int, Student> &schoolTree = batchNode->value[schoolIndex];
     if (schoolTree.findKey(schoolRollNumber) != nullptr) {
@@ -37,7 +41,6 @@ void StudentDatabase::addStudent(const Student &student) {
     schoolTree.insertChild(studentNode, 0);
 }
 
-// Function to search for a student by roll number
 bool StudentDatabase::searchStudent(const string &rollNumber) {
     try {
         if (rollNumber.size() < 6) {
@@ -62,23 +65,19 @@ bool StudentDatabase::searchStudent(const string &rollNumber) {
         shared_ptr<node<int, vector<Tree<int, Student>>>> batchNode = LUMS.findKey(batch);
         if (!batchNode) return false;
 
-        int schoolIndex = 3;
-        if (schoolCode == "01") schoolIndex = 0;
-        else if (schoolCode == "02") schoolIndex = 1;
-        else if (schoolCode == "03") schoolIndex = 2;
+        int schoolIndex = getSchoolIndex(schoolCode);
 
         Tree<int, Student> &schoolTree = batchNode->value[schoolIndex];
         return schoolTree.findKey(schoolRollNumber) != nullptr;
-    } catch (const std::invalid_argument &e) {
+    } catch (const invalid_argument &e) {
         cout << "Error: Invalid roll number format (" << rollNumber << "). " << e.what() << endl;
         return false;
-    } catch (const std::out_of_range &e) {
+    } catch (const out_of_range &e) {
         cout << "Error: Roll number value out of range (" << rollNumber << "). " << e.what() << endl;
         return false;
     }
 }
 
-// Function to display a student's details by roll number
 void StudentDatabase::displayStudent(const string &rollNumber) {
     if (!searchStudent(rollNumber)) {
         cout << "Student with roll number " << rollNumber << " not found.\n";
@@ -102,23 +101,19 @@ void StudentDatabase::displayStudent(const string &rollNumber) {
         int schoolRollNumber = stoi(schoolRollNumberStr);
 
         shared_ptr<node<int, vector<Tree<int, Student>>>> batchNode = LUMS.findKey(batch);
-        int schoolIndex = 3;
-        if (schoolCode == "01") schoolIndex = 0;
-        else if (schoolCode == "02") schoolIndex = 1;
-        else if (schoolCode == "03") schoolIndex = 2;
+        int schoolIndex = getSchoolIndex(schoolCode);
 
         Tree<int, Student> &schoolTree = batchNode->value[schoolIndex];
         shared_ptr<node<int, Student>> studentNode = schoolTree.findKey(schoolRollNumber);
 
         if (studentNode) studentNode->value.display();
-    } catch (const std::invalid_argument &e) {
+    } catch (const invalid_argument &e) {
         cout << "Error: Invalid roll number format (" << rollNumber << "). " << e.what() << endl;
-    } catch (const std::out_of_range &e) {
+    } catch (const out_of_range &e) {
         cout << "Error: Roll number value out of range (" << rollNumber << "). " << e.what() << endl;
     }
 }
 
-// Function to display all students in a specific batch
 void StudentDatabase::displayBatch(const int batch) {
     shared_ptr<node<int, vector<Tree<int, Student>>>> batchNode = LUMS.findKey(batch);
     if (!batchNode) {
@@ -127,13 +122,12 @@ void StudentDatabase::displayBatch(const int batch) {
     }
     for (int i = 0; i < 4; ++i) {
         Tree<int, Student> &schoolTree = batchNode->value[i];
-        for (auto &studentNode : schoolTree.getAllChildren(0)) {
+        for (shared_ptr<node<int, Student>> &studentNode : schoolTree.getAllChildren(0)) {
             studentNode->value.display();
         }
     }
 }
 
-// Function to display all students in a batch and school
 void StudentDatabase::displayBatchAndSchool(const int batch, const string schoolCode) {
     shared_ptr<node<int, vector<Tree<int, Student>>>> batchNode = LUMS.findKey(batch);
     if (!batchNode) {
@@ -141,33 +135,28 @@ void StudentDatabase::displayBatchAndSchool(const int batch, const string school
         return;
     }
 
-    int schoolIndex = 3;
-    if (schoolCode == "01") schoolIndex = 0;
-    else if (schoolCode == "02") schoolIndex = 1;
-    else if (schoolCode == "03") schoolIndex = 2;
+    int schoolIndex = getSchoolIndex(schoolCode);
 
     Tree<int, Student> &schoolTree = batchNode->value[schoolIndex];
-    for (auto &studentNode : schoolTree.getAllChildren(0)) {
+    for (shared_ptr<node<int, Student>> &studentNode : schoolTree.getAllChildren(0)) {
         studentNode->value.display();
     }
 }
 
-// Function to display all students in the database
 void StudentDatabase::displayAll() {
-    for (auto &batchNode : LUMS.getAllChildren(0)) {
-        for (auto &schoolTree : batchNode->value) {
-            for (auto &studentNode : schoolTree.getAllChildren(0)) {
+    for (shared_ptr<node<int, vector<Tree<int, Student>>>> &batchNode : LUMS.getAllChildren(0)) {
+        for (Tree<int, Student> &schoolTree : batchNode->value) {
+            for (shared_ptr<node<int, Student>> &studentNode : schoolTree.getAllChildren(0)) {
                 studentNode->value.display();
             }
         }
     }
 }
 
-// Function to read student data from a CSV file
 void StudentDatabase::read_csv(const string &filename) {
     ifstream file(filename);
     string line;
-    getline(file, line); // Skip header line
+    getline(file, line);
 
     while (getline(file, line)) {
         istringstream ss(line);
@@ -187,7 +176,24 @@ void StudentDatabase::read_csv(const string &filename) {
         addStudent(student);
     }
     file.close();
+
+    // Traverse the LUMS tree and count total students
+    int totalStudents = 0;
+    cout<<"Database Fetched \n";
+    for (const auto &batchNode : LUMS.getAllChildren(0)) {
+        cout << "Batch: " << batchNode->key << endl;
+        
+        for (int i = 0; i < batchNode->value.size(); ++i) {
+            Tree<int, Student> &schoolTree = batchNode->value[i];
+            int studentCount = schoolTree.getAllChildren(0).size();
+            cout << "  School " << i << " has " << studentCount << " students." << endl;
+            totalStudents += studentCount;
+        }
+    }
+    cout << "Total number of students in the database: " << totalStudents << endl;
 }
+
+
 
 // Main interface function
 void StudentDatabase::interface() {

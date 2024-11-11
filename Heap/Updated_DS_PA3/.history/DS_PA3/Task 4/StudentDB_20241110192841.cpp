@@ -1,0 +1,359 @@
+#include "StudentDB.h"
+
+
+// Constructor for StudentDatabase
+StudentDatabase::StudentDatabase() : LUMS(make_shared<node<int, vector<Tree<int, Student>>>>(0, vector<Tree<int, Student>>())) {
+    // Initialize any required resources if needed
+    read_csv("students.csv"); 
+}
+
+
+// Function to add a student to the database
+void StudentDatabase::addStudent(const Student &student) {
+    int batch = student.batch;
+    int schoolRollNumber = student.schoolRollNumber;
+    string schoolCode = student.schoolCode;
+
+    cout << "Attempting to add student with roll number: " << schoolRollNumber << endl;  // Debug
+
+    shared_ptr<node<int, vector<Tree<int, Student>>>> batchNode = LUMS.findKey(batch);
+    if (!batchNode) {
+        vector<Tree<int, Student>> schoolTrees = {
+            Tree<int, Student>(make_shared<node<int, Student>>(0, Student())),
+            Tree<int, Student>(make_shared<node<int, Student>>(0, Student())),
+            Tree<int, Student>(make_shared<node<int, Student>>(0, Student())),
+            Tree<int, Student>(make_shared<node<int, Student>>(0, Student()))
+        };
+        batchNode = make_shared<node<int, vector<Tree<int, Student>>>>(batch, schoolTrees);
+        LUMS.insertChild(batchNode, 0);
+    }
+
+    int schoolIndex = 3;
+    if (schoolCode == "01") schoolIndex = 0;
+    else if (schoolCode == "02") schoolIndex = 1;
+    else if (schoolCode == "03") schoolIndex = 2;
+
+    Tree<int, Student> &schoolTree = batchNode->value[schoolIndex];
+    if (schoolTree.findKey(schoolRollNumber) != nullptr) {
+        cout << "Duplicate entry for student: " << student.name << " with roll number: " << schoolRollNumber << endl;
+        return;
+    }
+
+    shared_ptr<node<int, Student>> studentNode = make_shared<node<int, Student>>(schoolRollNumber, student);
+    schoolTree.insertChild(studentNode, 0);
+}
+
+
+// Function to search for a student by roll number
+bool StudentDatabase::searchStudent(const string &rollNumber) {
+    // TODO: Implement the search functionality.
+    // 1. Extract the batch and school code from the roll number.
+    // 2. Search for the student in the corresponding B+ Tree using the school roll number as the key.
+    
+    try {
+        if (rollNumber.size() < 6) {
+            throw invalid_argument("Roll number is too short.");
+        }
+
+        string batchStr = rollNumber.substr(0, 2);
+        string schoolCode = rollNumber.substr(2, 2);
+        string schoolRollNumberStr = rollNumber.substr(4);
+
+        if (batchStr.empty() || schoolRollNumberStr.empty()) {
+            throw invalid_argument("Invalid roll number parts.");
+        }
+
+        if (!all_of(batchStr.begin(), batchStr.end(), ::isdigit) || !all_of(schoolRollNumberStr.begin(), schoolRollNumberStr.end(), ::isdigit)) {
+            throw invalid_argument("Roll number parts must contain only digits.");
+        }
+
+        int batch = stoi(batchStr);
+        int schoolRollNumber = stoi(schoolRollNumberStr);
+
+        shared_ptr<node<int, vector<Tree<int, Student>>>> batchNode = LUMS.findKey(batch);
+        if (!batchNode) return false;
+
+        int schoolIndex = 3;
+        if (schoolCode == "01") schoolIndex = 0;
+        else if (schoolCode == "02") schoolIndex = 1;
+        else if (schoolCode == "03") schoolIndex = 2;
+
+        Tree<int, Student> &schoolTree = batchNode->value[schoolIndex];
+        return schoolTree.findKey(schoolRollNumber) != nullptr;
+    } catch (const std::invalid_argument &e) {
+        cout << "Error: Invalid roll number format (" << rollNumber << "). " << e.what() << endl;
+        return false;
+    } catch (const std::out_of_range &e) {
+        cout << "Error: Roll number value out of range (" << rollNumber << "). " << e.what() << endl;
+        return false;
+    }
+}
+
+
+
+// Function to display a student's details by roll number
+void StudentDatabase::displayStudent(const string &rollNumber) {
+    // TODO: Implement the display functionality.
+    // 1. Use the searchStudent function to find the student by roll number.
+    // 2. If found, call the student's display method to show their details.
+    if (!searchStudent(rollNumber)) {
+        cout << "Student with roll number " << rollNumber << " not found.\n";
+        return;
+    }
+
+    try {
+        if (rollNumber.size() < 6) {
+            throw invalid_argument("Roll number is too short.");
+        }
+
+        string batchStr = rollNumber.substr(0, 2);
+        string schoolCode = rollNumber.substr(2, 2);
+        string schoolRollNumberStr = rollNumber.substr(4);
+
+        if (batchStr.empty() || schoolRollNumberStr.empty()) {
+            throw invalid_argument("Invalid roll number parts.");
+        }
+
+        int batch = stoi(batchStr);
+        int schoolRollNumber = stoi(schoolRollNumberStr);
+
+        shared_ptr<node<int, vector<Tree<int, Student>>>> batchNode = LUMS.findKey(batch);
+        int schoolIndex = 3;
+        if (schoolCode == "01") schoolIndex = 0;
+        else if (schoolCode == "02") schoolIndex = 1;
+        else if (schoolCode == "03") schoolIndex = 2;
+
+        Tree<int, Student> &schoolTree = batchNode->value[schoolIndex];
+        shared_ptr<node<int, Student>> studentNode = schoolTree.findKey(schoolRollNumber);
+
+        if (studentNode) studentNode->value.display();
+    } catch (const std::invalid_argument &e) {
+        cout << "Error: Invalid roll number format (" << rollNumber << "). " << e.what() << endl;
+    } catch (const std::out_of_range &e) {
+        cout << "Error: Roll number value out of range (" << rollNumber << "). " << e.what() << endl;
+    }
+}
+
+
+
+// Function to display all students in a specific batch
+void StudentDatabase::displayBatch(const int batch) {
+    // TODO: Implement the display functionality for all students in a given batch.
+    // 1. Iterate through the vector of B+ Trees corresponding to the batch.
+    // 2. For each school, display all students in that B+ Tree.
+    shared_ptr<node<int, vector<Tree<int, Student>>>> batchNode = LUMS.findKey(batch);
+    if (!batchNode) {
+        cout << "No students found for batch " << batch << ".\n";
+        return;
+    }
+    for (int i = 0; i < 4; ++i) {
+        Tree<int, Student> &schoolTree = batchNode->value[i];
+        for (auto &studentNode : schoolTree.getAllChildren(0)) {
+            studentNode->value.display();
+        }
+    }
+}
+
+
+
+// Function to display all students in a batch and school
+void StudentDatabase::displayBatchAndSchool(const int batch, const string schoolCode) {
+    // TODO: Implement the logic to display students for a specific batch and school.
+    // 1. Find the index of the school code to access the correct B+ Tree.
+    // 2. Display students from that B+ Tree based on the batch.
+    
+    shared_ptr<node<int, vector<Tree<int, Student>>>> batchNode = LUMS.findKey(batch);
+    if (!batchNode) {
+        cout << "No students found for batch " << batch << ".\n";
+        return;
+    }
+
+    int schoolIndex = 3;
+    if (schoolCode == "01") schoolIndex = 0;
+    else if (schoolCode == "02") schoolIndex = 1;
+    else if (schoolCode == "03") schoolIndex = 2;
+
+    Tree<int, Student> &schoolTree = batchNode->value[schoolIndex];
+    for (auto &studentNode : schoolTree.getAllChildren(0)) {
+        studentNode->value.display();
+    }
+}
+
+
+
+// Function to display all students in the database
+void StudentDatabase::displayAll() {
+    // TODO: Implement the logic to display all students.
+    // 1. Iterate over all batches in the LUMS B+ Tree.
+    // 2. For each batch, iterate over the corresponding vector of B+ Trees and display each student
+
+    int batchIndex = 0;
+    for (shared_ptr<node<int, vector<Tree<int, Student>>>>& batchNode : LUMS.getAllChildren(0)) {
+        cout << "Batch " << batchNode->key << ":" << endl;
+
+        int schoolIndex = 0;
+        for (Tree<int, Student>& schoolTree : batchNode->value) {
+            cout << "School " << (schoolIndex + 1) << ":" << endl;
+            
+            int studentIndex = 0;
+            for (shared_ptr<node<int, Student>>& studentNode : schoolTree.getAllChildren(0)) {
+                cout << "    Student " << (studentIndex + 1) << ": ";
+                studentNode->value.display();
+                studentIndex++;
+            }
+            schoolIndex++;
+        }
+        batchIndex++;
+    }
+}
+
+
+
+
+// Function to read student data from a CSV file
+void StudentDatabase::read_csv(const string &filename) {
+    ifstream file(filename);
+    string line;
+    getline(file, line);  // Skip header line if there's one
+
+    int rowCount = 0;  // Tracks rows read from the file
+    int insertionCount = 0;  // Tracks students inserted into the tree
+
+    while (getline(file, line)) {
+        istringstream ss(line);
+        string rollNumber, name, major;
+        int age;
+        float GPA;
+
+        // Read and parse the data from the CSV line
+        getline(ss, rollNumber, ',');
+        getline(ss, name, ',');
+        ss >> age;
+        ss.ignore();  
+        ss >> GPA;
+        ss.ignore();  
+        getline(ss, major);
+
+        Student student(rollNumber, name, age, GPA, major);
+
+        // Count the row
+        rowCount++;  
+
+        // Add the student to the database and check if the insertion was successful
+        addStudent(student);
+        insertionCount++;  // Increment only if insertion is successful
+    }
+
+    // Display the row count and insertions separately
+    cout << "Total rows processed: " << rowCount << endl;
+    cout << "Total students inserted: " << insertionCount << endl;
+
+    // Count the number of students in the database after insertion
+    int totalStudentCount = 0;
+    for (auto &batchNode : LUMS.getAllChildren(0)) {
+        for (auto &schoolTree : batchNode->value) {
+            totalStudentCount += schoolTree.getAllChildren(0).size();  // Count the students in each school tree
+        }
+    }
+
+    cout << "Total students in the database: " << totalStudentCount << endl;  // Display total students in the database
+
+    file.close();
+}
+
+// Main interface function
+void StudentDatabase::interface() {
+    int choice;
+    string rollNumber;
+    int batch;
+    string schoolCode;
+
+    while (true) {
+        cout << ":------------------------------------:\n";
+        cout << "|  LUMS Database management System\n";
+        cout << "|  1. Add Student\n";
+        cout << "|  2. Search Student by Roll Number\n";
+        cout << "|  3. Display Student Details\n";
+        cout << "|  4. Display All Students in a Batch\n";
+        cout << "|  5. Display Students in a Batch and School\n";
+        cout << "|  6. Display All Students\n";
+        cout << "|  7. Exit\n";
+        cout << "|  8. Clear Screen\n";
+        cout << ":------------------------------------:\n";
+
+        while (!(cin >> choice) || choice < 1 || choice > 8) {
+            cout << "Invalid choice. Please enter a number between 1 and 8: ";
+            cin.clear();
+            cin.ignore(10000, '\n');
+        }
+
+        switch (choice) {
+            case 1: {
+                string name, major;
+                int age;
+                float GPA;
+                cout << "Enter roll number: ";
+                cin >> rollNumber;
+                cout << "Enter name: ";
+                cin.ignore();
+                getline(cin, name);
+                cout << "Enter age: ";
+                cin >> age;
+                cout << "Enter GPA: ";
+                cin >> GPA;
+                cout << "Enter major: ";
+                cin.ignore();
+                getline(cin, major);
+
+                Student newStudent(rollNumber, name, age, GPA, major);
+                addStudent(newStudent);
+                break;
+            }
+            case 2:
+                cout << "Enter roll number to search: ";
+                cin >> rollNumber;
+                if (searchStudent(rollNumber)) {
+                    cout << "Student found.\n";
+                } else {
+                    cout << "Student not found.\n";
+                }
+                break;
+            case 3:
+                cout << "Enter roll number to display details: ";
+                cin >> rollNumber;
+                displayStudent(rollNumber);
+                break;
+            case 4:
+                cout << "Enter batch number: ";
+                cin >> batch;
+                displayBatch(batch);
+                break;
+            case 5:
+                cout << "Enter batch number: ";
+                cin >> batch;
+                cout << "Enter school code: ";
+                cin >> schoolCode;
+                displayBatchAndSchool(batch, schoolCode);
+                break;
+            case 6:
+                displayAll();
+                break;
+            case 7:
+                cout << "Exiting...\n";
+                return;
+            case 8:
+                system("CLS");
+                break;
+        }
+    }
+}
+
+
+
+
+
+int main() {
+    StudentDatabase db;
+    db.interface();
+    return 0;
+}
