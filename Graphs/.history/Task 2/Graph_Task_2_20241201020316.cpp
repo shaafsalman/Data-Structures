@@ -2,10 +2,6 @@
 #include "../Task 1/Graph_Task_1.cpp"
 #include <queue>
 #include <stack>
-#include <unordered_map>
-#include <climits>
-#include <set>        
-#include <map>  
 
 // ::::::::::::::::::::::::::::::::::::::: TASK 2 :::::::::::::::::::::::::::::::::::::::::::
 

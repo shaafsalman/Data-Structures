@@ -61,6 +61,10 @@
     "vector": "cpp",
     "memory": "cpp",
     "deque": "cpp",
-    "xstring": "cpp"
+    "xstring": "cpp",
+    "unordered_map": "cpp",
+    "queue": "cpp",
+    "cwchar": "cpp",
+    "stack": "cpp"
   }
 }
