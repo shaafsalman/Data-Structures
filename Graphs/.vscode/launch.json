@@ -1,0 +1,13 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "C/C++ Runner: Debug Session",
+      "type": "lldb",
+      "request": "launch",
+      "args": [],
+      "cwd": "/Users/aamil_khaan/Desktop/CS 202 - TAship/PA4_Solution/Task 1",
+      "program": "/Users/aamil_khaan/Desktop/CS 202 - TAship/PA4_Solution/Task 1/build/Debug/outDebug"
+    }
+  ]
+}
