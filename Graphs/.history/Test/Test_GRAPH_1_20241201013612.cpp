@@ -116,14 +116,7 @@ void testAdjacencyMatrix(bool directed, bool weighted) {
 
         graph.updateAdjacencyMatrix();
 
-        auto matrix = graph.getAdjacencyMatrix();
-        cout << "Adjacency Matrix: \n";
-        for (const auto& row : matrix) {
-            for (int val : row) {
-                cout << val << " ";
-            }
-            cout << endl;
-        }
+        auto matrix = weighted ? graph.getAdjacencyMatrixWeighted() : graph.getAdjacencyMatrix();
 
         // Assertions based on weighted and directed configurations
         if (weighted) {

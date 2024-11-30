@@ -62,19 +62,17 @@ void Graph<T>::addEdge(T source, T destination, int weight) {
         return;
     }
 
-    // if (!weighted && weight != 0) {
-    //     cout << "Functionality not available for unweighted graphs." << endl;
-    //     return;
-    // }
+    if (!weighted && weight != 0) {
+        cout << "Functionality not available for unweighted graphs." << endl;
+        return;
+    }
 
     auto newEdge = make_shared<Edge<T>>(srcVertex, destVertex, weight, directed);
     edges.push_back(newEdge);
     srcVertex->addEdge(newEdge);
-
     if (!directed) {
         destVertex->addEdge(make_shared<Edge<T>>(destVertex, srcVertex, weight, false));
     }
-
     updateAdjacencyMatrix();
 }
 
@@ -265,33 +263,20 @@ void Graph<T>::updateAdjacencyMatrix() {
     // weight of the edge for weighted graphs, 0 otherwise
 
     // Solution:
-  int size = vertices.size();
-    
-    // Initialize both matrices with zeros
-    adjacencyMatrix.assign(size, vector<int>(size, 0));  // Unweighted matrix
+     int size = vertices.size();
+    adjacencyMatrix.assign(size, vector<int>(size, 0));
     adjacencyMatrixWeighted.assign(size, vector<int>(size, 0));
 
-    // Update the adjacency matrix for edges
     for (auto edge : edges) {
         int srcIdx = find(vertices.begin(), vertices.end(), edge->getSource()) - vertices.begin();
         int destIdx = find(vertices.begin(), vertices.end(), edge->getDestination()) - vertices.begin();
 
-        // If weighted graph, use the edge weight
-        if (weighted) {
-            adjacencyMatrix[srcIdx][destIdx] = edge->getWeight(); // Actual weight in weighted matrix
-            adjacencyMatrixWeighted[srcIdx][destIdx] = edge->getWeight(); // Actual weight in weighted matrix
-        } else {
-            adjacencyMatrix[srcIdx][destIdx] = 1;  // Presence of edge in adjacency matrix (unweighted)
-        }
+        adjacencyMatrix[srcIdx][destIdx] = 1;
+        adjacencyMatrixWeighted[srcIdx][destIdx] = edge->getWeight();
 
-        // For undirected graph, we also need to ensure symmetry
         if (!directed) {
-            if (weighted) {
-                adjacencyMatrix[destIdx][srcIdx] = edge->getWeight(); // Symmetry in weighted graph
-                adjacencyMatrixWeighted[destIdx][srcIdx] = edge->getWeight(); // Symmetry in weighted graph
-            } else {
-                adjacencyMatrix[destIdx][srcIdx] = 1;  // Symmetric edge for undirected graph (unweighted)
-            }
+            adjacencyMatrix[destIdx][srcIdx] = 1;
+            adjacencyMatrixWeighted[destIdx][srcIdx] = edge->getWeight();
         }
     }
 }

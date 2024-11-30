@@ -104,6 +104,7 @@ void testAdjacencyMatrix(bool directed, bool weighted) {
         graph.addVertex(1); // Index 0
         graph.addVertex(2); // Index 1
         graph.addVertex(3); // Index 2
+        cout<<"vertex added to graph \n";
 
         if (weighted) {
             graph.addEdge(1, 2, 5);  // Weighted edge from 1->2
@@ -113,17 +114,9 @@ void testAdjacencyMatrix(bool directed, bool weighted) {
             graph.addEdge(2, 3, 0); // Unweighted edge from 2->3
         }
 
-
         graph.updateAdjacencyMatrix();
 
         auto matrix = graph.getAdjacencyMatrix();
-        cout << "Adjacency Matrix: \n";
-        for (const auto& row : matrix) {
-            for (int val : row) {
-                cout << val << " ";
-            }
-            cout << endl;
-        }
 
         // Assertions based on weighted and directed configurations
         if (weighted) {
