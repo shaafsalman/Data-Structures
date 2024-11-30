@@ -65,6 +65,7 @@
     "unordered_map": "cpp",
     "queue": "cpp",
     "cwchar": "cpp",
-    "stack": "cpp"
+    "stack": "cpp",
+    "type_traits": "cpp"
   }
 }

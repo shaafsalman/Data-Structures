@@ -52,61 +52,13 @@ vector<shared_ptr<Vertex<T>>> Graph<T>::shortestPath(shared_ptr<Vertex<T>> sourc
     
 }
 
-
-
-
 template <class T>
 vector<shared_ptr<Vertex<T>>> Graph<T>::topologicalSort() {
-    if (!directed) {
-        cout << "Topological Sort is only applicable to directed graphs." << endl;
-        return {};
-    }
+    // Perform Topological Sort on the graph
+    // Return the vertices in the topological order
 
-    // Calculate in-degrees
-    unordered_map<shared_ptr<Vertex<T>>, int> inDegree;
-    for (auto vertex : vertices) {
-        inDegree[vertex] = 0;  // Initialize all vertices with in-degree 0
-    }
-    for (auto edge : edges) {
-        inDegree[edge->getDestination()]++;
-    }
-
-    // Queue for vertices with in-degree 0
-    queue<shared_ptr<Vertex<T>>> q;
-    for (auto vertex : vertices) {
-        if (inDegree[vertex] == 0) {
-            q.push(vertex);
-        }
-    }
-
-    vector<shared_ptr<Vertex<T>>> result;
-    while (!q.empty()) {
-        auto vertex = q.front();
-        q.pop();
-        result.push_back(vertex);
-        
-        for (auto adj : getAdjacentVertices(vertex)) {
-            inDegree[adj]--;
-            if (inDegree[adj] == 0) {
-                q.push(adj);
-            }
-        }
-    }
-    
-    // If there is a cycle, the result will have fewer vertices
-    if (result.size() != vertices.size()) {
-        cout << "Graph has a cycle, topological sort is not possible." << endl;
-        return {};
-    }
-    return result;
+    // Solution:
 }
-
-
-
-
-
-
-
 
 template <class T>
 shared_ptr<Graph<T>> Graph<T>::minimumSpanningTree() {

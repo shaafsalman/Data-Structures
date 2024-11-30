@@ -9,55 +9,57 @@ vector<shared_ptr<Vertex<T>>> Graph<T>::shortestPath(shared_ptr<Vertex<T>> sourc
 
     // Make sure to use the correct algorithm based on the type of graph (directed/undirected, weighted/unweighted)
 
-    // Solution:z
-
-     vector<shared_ptr<Vertex<T>>> path;
-    unordered_map<shared_ptr<Vertex<T>>, shared_ptr<Vertex<T>>> previous;
-    unordered_map<shared_ptr<Vertex<T>>, int> distance;
-    priority_queue<pair<int, shared_ptr<Vertex<T>>>, vector<pair<int, shared_ptr<Vertex<T>>>>, greater<pair<int, shared_ptr<Vertex<T>>>>> pq;
-
-    // Initialize distances to infinity and source distance to 0
-    for (auto& vertex : vertices) {
-        distance[vertex] = INT_MAX;
+    // Solution:
+      if (!weighted) {
+        return BFSTraversal(source);  // BFS traversal to get the shortest path in an unweighted graph
     }
-    distance[source] = 0;
+    
+    // For weighted graphs, use Dijkstra's algorithm
+    vector<shared_ptr<Vertex<T>>> path;
+    vector<int> distances(vertices.size(), INT_MAX);
+    vector<shared_ptr<Vertex<T>>> previous(vertices.size(), nullptr);
+    distances[find(vertices.begin(), vertices.end(), source) - vertices.begin()] = 0;
 
+    // Min-heap or priority queue
+    priority_queue<pair<int, shared_ptr<Vertex<T>>>, vector<pair<int, shared_ptr<Vertex<T>>>>, greater<pair<int, shared_ptr<Vertex<T>>>>> pq;
     pq.push({0, source});
-
+    
     while (!pq.empty()) {
-        auto current = pq.top().second;
+        auto [dist, vertex] = pq.top();
         pq.pop();
-
-        if (current == destination) {
-            break;  // Stop when we reach the destination
+        
+        if (vertex == destination) {
+            break;
         }
 
-        for (auto& neighbor : getAdjacentVertices(current)) {
-            int alt = distance[current] + (weighted ? getEdge(current->getData(), neighbor->getData())->getWeight() : 1);
-            if (alt < distance[neighbor]) {
-                distance[neighbor] = alt;
-                previous[neighbor] = current;
-                pq.push({alt, neighbor});
+        for (auto adj : getAdjacentVertices(vertex)) {
+            int edgeWeight = getEdge(vertex->getData(), adj->getData())->getWeight();
+            int newDist = dist + edgeWeight;
+            int adjIdx = find(vertices.begin(), vertices.end(), adj) - vertices.begin();
+            if (newDist < distances[adjIdx]) {
+                distances[adjIdx] = newDist;
+                previous[adjIdx] = vertex;
+                pq.push({newDist, adj});
             }
         }
     }
-
-    // Reconstruct the path from destination to source
-    for (auto at = destination; at != nullptr; at = previous[at]) {
-        path.push_back(at);
-    }
-
-    reverse(path.begin(), path.end());
-    return path;
     
+    // Reconstruct the shortest path
+    shared_ptr<Vertex<T>> current = destination;
+    while (current) {
+        path.insert(path.begin(), current);
+        current = previous[find(vertices.begin(), vertices.end(), current) - vertices.begin()];
+    }
+    return path;
 }
-
-
-
 
 template <class T>
 vector<shared_ptr<Vertex<T>>> Graph<T>::topologicalSort() {
-    if (!directed) {
+    // Perform Topological Sort on the graph
+    // Return the vertices in the topological order
+
+    // Solution:
+     if (!directed) {
         cout << "Topological Sort is only applicable to directed graphs." << endl;
         return {};
     }
@@ -101,19 +103,13 @@ vector<shared_ptr<Vertex<T>>> Graph<T>::topologicalSort() {
     return result;
 }
 
-
-
-
-
-
-
-
 template <class T>
 shared_ptr<Graph<T>> Graph<T>::minimumSpanningTree() {
     // Find the minimum spanning tree of the graph
     // Return the minimum spanning tree as a Graph object
 
     // Solution:
+    
 };
 
 template <class T>
