@@ -73,6 +73,4 @@ void Edge<T>::setWeight(int weight) {
     // Set the weight of the edge
 
     // Solution:
-    this->weight = weight;
-
 }

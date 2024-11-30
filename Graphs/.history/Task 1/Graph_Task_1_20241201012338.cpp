@@ -291,12 +291,6 @@ void Graph<T>::printAdjacencyMatrix() {
     // Print the adjacency matrix of the graph with row and column headers shown
 
     // Solution:
-      for (const auto &row : adjacencyMatrix) {
-        for (const auto &value : row) {
-            cout << value << " ";
-        }
-        cout << endl;
-    }
 }
 
 template <class T>

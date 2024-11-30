@@ -282,8 +282,6 @@ vector<vector<int>> Graph<T>::getAdjacencyMatrix() {
     // Return the adjacency matrix of the graph
 
     // Solution:
-        return adjacencyMatrix;
-
 }
 
 template <class T>
@@ -291,12 +289,6 @@ void Graph<T>::printAdjacencyMatrix() {
     // Print the adjacency matrix of the graph with row and column headers shown
 
     // Solution:
-      for (const auto &row : adjacencyMatrix) {
-        for (const auto &value : row) {
-            cout << value << " ";
-        }
-        cout << endl;
-    }
 }
 
 template <class T>
@@ -304,13 +296,6 @@ void Graph<T>::printAdjacencyList() {
     // Print the adjacency list of the graph
 
     // Solution:
-     for (auto vertex : vertices) {
-        cout << vertex->getData() << ": ";
-        for (auto edge : vertex->getEdges()) {
-            cout << edge->getDestination()->getData() << " ";
-        }
-        cout << endl;
-    }
 }
 
 

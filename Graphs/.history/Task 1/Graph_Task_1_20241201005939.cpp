@@ -1,13 +1,11 @@
 #include "../src/Graph.h"
 #include "Vertex.cpp"
 #include <fstream>
-#include <algorithm>
-
 
 template <class T>
 Graph<T>::Graph() {
     // Default constructor for the Graph class
-        this->directed = false;
+    this->directed = false;
     this->weighted = false;
 }
 
@@ -24,8 +22,9 @@ Graph<T>::Graph(bool directed, bool weighted) {
     // 4. Undirected and Unweighted
 
     // Solution:
-        this->directed = directed;
+    this->directed = directed;
     this->weighted = weighted;
+    
 }
 
 template <class T> 
@@ -34,7 +33,7 @@ void Graph<T>::addVertex(T data) {
     // data: data of the vertex to be added
 
     // Solution:
-       if (getVertex(data) != nullptr) {
+     if (getVertex(data) != nullptr) {
         cout << "Vertex already exists." << endl;
         return;
     }
@@ -50,7 +49,7 @@ void Graph<T>::addEdge(T source, T destination, int weight) {
     // weight: weight of the edge (0 for unweighted graphs)
 
     // Solution:
-    auto srcVertex = getVertex(source);
+     auto srcVertex = getVertex(source);
     auto destVertex = getVertex(destination);
 
     if (!srcVertex || !destVertex) {
@@ -111,14 +110,6 @@ void Graph<T>::removeEdge(T source, T destination) {
     // destination: data of the destination vertex
 
     // Solution:
-     edges.erase(
-        remove_if(edges.begin(), edges.end(), [source, destination](shared_ptr<Edge<T>> edge) {
-            return edge->getSource()->getData() == source && edge->getDestination()->getData() == destination;
-        }),
-        edges.end()
-    );
-
-    updateAdjacencyMatrix();
 }
 
 template <class T>
@@ -127,12 +118,6 @@ shared_ptr<Vertex<T>> Graph<T>::getVertex(T data) {
     // data: data of the vertex to be returned
 
     // Solution:
-     for (auto vertex : vertices) {
-        if (vertex->getData() == data) {
-            return vertex;
-        }
-    }
-    return nullptr;
 }
 
 template <class T>
@@ -142,12 +127,6 @@ shared_ptr<Edge<T>> Graph<T>::getEdge(T source, T destination) {
     // destination: data of the destination vertex
 
     // Solution:
-      for (auto edge : edges) {
-        if (edge->getSource()->getData() == source && edge->getDestination()->getData() == destination) {
-            return edge;
-        }
-    }
-    return nullptr;
 }
 
 template <class T>
@@ -155,8 +134,6 @@ vector<shared_ptr<Vertex<T>>> Graph<T>::getAllVertices() {
     // Return all the vertices in the graph
 
     // Solution:
-        return vertices;
-
 }
 
 template <class T>
@@ -164,8 +141,6 @@ vector<shared_ptr<Edge<T>>> Graph<T>::getAllEdges() {
     // Return all the edges in the graph
 
     // Solution:
-        return edges;
-
 }
 
 template <class T>
@@ -174,8 +149,6 @@ vector<shared_ptr<Edge<T>>> Graph<T>::getEdges(shared_ptr<Vertex<T>> vertex) {
     // vertex: vertex whose edges are to be returned
 
     // Solution:
-        return vertex->getEdges();
-
 }
 
 template <class T>
@@ -184,11 +157,6 @@ vector<shared_ptr<Vertex<T>>> Graph<T>::getAdjacentVertices(shared_ptr<Vertex<T>
     // vertex: vertex whose adjacent vertices are to be returned
 
     // Solution:
-    vector<shared_ptr<Vertex<T>>> adjacent;
-    for (auto edge : vertex->getEdges()) {
-        adjacent.push_back(edge->getDestination());
-    }
-    return adjacent;
 }
 
 template <class T>
@@ -197,13 +165,6 @@ vector<shared_ptr<Vertex<T>>> Graph<T>::getInAdjacentVertices(shared_ptr<Vertex<
     // vertex: vertex whose incoming adjacent vertices are to be returned
 
     // Solution:
-     vector<shared_ptr<Vertex<T>>> inAdjacent;
-    for (auto edge : edges) {
-        if (edge->getDestination() == vertex) {
-            inAdjacent.push_back(edge->getSource());
-        }
-    }
-    return inAdjacent;
 }
 
 template <class T>
@@ -212,8 +173,6 @@ vector<shared_ptr<Vertex<T>>> Graph<T>::getOutAdjacentVertices(shared_ptr<Vertex
     // vertex: vertex whose outgoing adjacent vertices are to be returned
 
     // Solution:
-        return getAdjacentVertices(vertex);
-
 }
 
 template <class T>
@@ -221,8 +180,6 @@ bool Graph<T>::isDirected() {
     // Return true if the graph is directed, false otherwise
 
     // Solution:
-        return directed;
-
 }
 
 template <class T>
@@ -230,8 +187,6 @@ bool Graph<T>::isWeighted() {
     // Return true if the graph is weighted, false otherwise
 
     // Solution:
-        return weighted;
-
 }
 
 template <class T>
@@ -239,8 +194,6 @@ void Graph<T>::setDirected(bool directed) {
     // set the direction status
 
     // Solution:
-        this->directed = directed;
-
 }
 
 template <class T>
@@ -248,8 +201,6 @@ void Graph<T>::setWeighted(bool weighted) {
     // set the weighted status
 
     // Solution:
-        this->weighted = weighted;
-
 }
 
 template <class T>
@@ -259,22 +210,6 @@ void Graph<T>::updateAdjacencyMatrix() {
     // weight of the edge for weighted graphs, 0 otherwise
 
     // Solution:
-     int size = vertices.size();
-    adjacencyMatrix.assign(size, vector<int>(size, 0));
-    adjacencyMatrixWeighted.assign(size, vector<int>(size, 0));
-
-    for (auto edge : edges) {
-        int srcIdx = find(vertices.begin(), vertices.end(), edge->getSource()) - vertices.begin();
-        int destIdx = find(vertices.begin(), vertices.end(), edge->getDestination()) - vertices.begin();
-
-        adjacencyMatrix[srcIdx][destIdx] = 1;
-        adjacencyMatrixWeighted[srcIdx][destIdx] = edge->getWeight();
-
-        if (!directed) {
-            adjacencyMatrix[destIdx][srcIdx] = 1;
-            adjacencyMatrixWeighted[destIdx][srcIdx] = edge->getWeight();
-        }
-    }
 }
 
 template <class T>
@@ -282,8 +217,6 @@ vector<vector<int>> Graph<T>::getAdjacencyMatrix() {
     // Return the adjacency matrix of the graph
 
     // Solution:
-        return adjacencyMatrix;
-
 }
 
 template <class T>
@@ -291,12 +224,6 @@ void Graph<T>::printAdjacencyMatrix() {
     // Print the adjacency matrix of the graph with row and column headers shown
 
     // Solution:
-      for (const auto &row : adjacencyMatrix) {
-        for (const auto &value : row) {
-            cout << value << " ";
-        }
-        cout << endl;
-    }
 }
 
 template <class T>
@@ -304,13 +231,6 @@ void Graph<T>::printAdjacencyList() {
     // Print the adjacency list of the graph
 
     // Solution:
-     for (auto vertex : vertices) {
-        cout << vertex->getData() << ": ";
-        for (auto edge : vertex->getEdges()) {
-            cout << edge->getDestination()->getData() << " ";
-        }
-        cout << endl;
-    }
 }
 
 

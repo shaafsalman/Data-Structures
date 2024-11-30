@@ -58,6 +58,9 @@
   "C_Cpp_Runner.msvcSecureNoWarnings": false,
   "files.associations": {
     "iostream": "cpp",
-    "vector": "cpp"
+    "vector": "cpp",
+    "memory": "cpp",
+    "deque": "cpp",
+    "xstring": "cpp"
   }
 }

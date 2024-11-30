@@ -46,8 +46,6 @@ shared_ptr<Vertex<T>> Edge<T>::getDestination() {
     // Return the destination vertex of the edge
 
     // Solution:
-    return destination;
-
 }
 
 template <class T>
@@ -55,8 +53,6 @@ int Edge<T>::getWeight() {
     // Return the weight of the edge 
 
     // Solution:
-    return weight;
-
 }
 
 template <class T>
@@ -64,8 +60,6 @@ bool Edge<T>::isDirected() {
     // Return true if the edge is directed, false otherwise
 
     // Solution:
-    return directed;
-
 }
 
 template <class T>
@@ -73,6 +67,4 @@ void Edge<T>::setWeight(int weight) {
     // Set the weight of the edge
 
     // Solution:
-    this->weight = weight;
-
 }

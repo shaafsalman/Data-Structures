@@ -55,8 +55,6 @@ int Edge<T>::getWeight() {
     // Return the weight of the edge 
 
     // Solution:
-    return weight;
-
 }
 
 template <class T>
@@ -64,8 +62,6 @@ bool Edge<T>::isDirected() {
     // Return true if the edge is directed, false otherwise
 
     // Solution:
-    return directed;
-
 }
 
 template <class T>
@@ -73,6 +69,4 @@ void Edge<T>::setWeight(int weight) {
     // Set the weight of the edge
 
     // Solution:
-    this->weight = weight;
-
 }

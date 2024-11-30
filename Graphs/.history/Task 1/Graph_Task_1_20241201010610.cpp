@@ -7,7 +7,7 @@
 template <class T>
 Graph<T>::Graph() {
     // Default constructor for the Graph class
-        this->directed = false;
+    this->directed = false;
     this->weighted = false;
 }
 
@@ -24,8 +24,9 @@ Graph<T>::Graph(bool directed, bool weighted) {
     // 4. Undirected and Unweighted
 
     // Solution:
-        this->directed = directed;
+    this->directed = directed;
     this->weighted = weighted;
+    
 }
 
 template <class T> 
@@ -34,7 +35,7 @@ void Graph<T>::addVertex(T data) {
     // data: data of the vertex to be added
 
     // Solution:
-       if (getVertex(data) != nullptr) {
+     if (getVertex(data) != nullptr) {
         cout << "Vertex already exists." << endl;
         return;
     }
@@ -52,23 +53,16 @@ void Graph<T>::addEdge(T source, T destination, int weight) {
     // Solution:
     auto srcVertex = getVertex(source);
     auto destVertex = getVertex(destination);
+    if (!srcVertex || !destVertex) return;
 
-    if (!srcVertex || !destVertex) {
-        cout << "Source or destination vertex not found." << endl;
-        return;
-    }
+    auto edge = std::make_shared<Edge<T>>(srcVertex, destVertex, weight);
+    edges.push_back(edge);
 
-    if (!weighted && weight != 0) {
-        cout << "Functionality not available for unweighted graphs." << endl;
-        return;
-    }
-
-    auto newEdge = make_shared<Edge<T>>(srcVertex, destVertex, weight, directed);
-    edges.push_back(newEdge);
-    srcVertex->addEdge(newEdge);
     if (!directed) {
-        destVertex->addEdge(make_shared<Edge<T>>(destVertex, srcVertex, weight, false));
+        auto reverseEdge = std::make_shared<Edge<T>>(destVertex, srcVertex, weight);
+        edges.push_back(reverseEdge);
     }
+
     updateAdjacencyMatrix();
 }
 
@@ -142,7 +136,7 @@ shared_ptr<Edge<T>> Graph<T>::getEdge(T source, T destination) {
     // destination: data of the destination vertex
 
     // Solution:
-      for (auto edge : edges) {
+     for (auto edge : edges) {
         if (edge->getSource()->getData() == source && edge->getDestination()->getData() == destination) {
             return edge;
         }
@@ -155,7 +149,7 @@ vector<shared_ptr<Vertex<T>>> Graph<T>::getAllVertices() {
     // Return all the vertices in the graph
 
     // Solution:
-        return vertices;
+    return vertices;
 
 }
 
@@ -164,7 +158,7 @@ vector<shared_ptr<Edge<T>>> Graph<T>::getAllEdges() {
     // Return all the edges in the graph
 
     // Solution:
-        return edges;
+    return edges;
 
 }
 
@@ -174,9 +168,10 @@ vector<shared_ptr<Edge<T>>> Graph<T>::getEdges(shared_ptr<Vertex<T>> vertex) {
     // vertex: vertex whose edges are to be returned
 
     // Solution:
-        return vertex->getEdges();
+    return vertex->getEdges();
 
 }
+
 
 template <class T>
 vector<shared_ptr<Vertex<T>>> Graph<T>::getAdjacentVertices(shared_ptr<Vertex<T>> vertex) {
@@ -197,7 +192,7 @@ vector<shared_ptr<Vertex<T>>> Graph<T>::getInAdjacentVertices(shared_ptr<Vertex<
     // vertex: vertex whose incoming adjacent vertices are to be returned
 
     // Solution:
-     vector<shared_ptr<Vertex<T>>> inAdjacent;
+    vector<shared_ptr<Vertex<T>>> inAdjacent;
     for (auto edge : edges) {
         if (edge->getDestination() == vertex) {
             inAdjacent.push_back(edge->getSource());
@@ -212,16 +207,17 @@ vector<shared_ptr<Vertex<T>>> Graph<T>::getOutAdjacentVertices(shared_ptr<Vertex
     // vertex: vertex whose outgoing adjacent vertices are to be returned
 
     // Solution:
-        return getAdjacentVertices(vertex);
+    return getAdjacentVertices(vertex);
 
 }
+
 
 template <class T>
 bool Graph<T>::isDirected() {
     // Return true if the graph is directed, false otherwise
 
     // Solution:
-        return directed;
+    return directed;
 
 }
 
@@ -230,7 +226,7 @@ bool Graph<T>::isWeighted() {
     // Return true if the graph is weighted, false otherwise
 
     // Solution:
-        return weighted;
+    return weighted;
 
 }
 
@@ -239,7 +235,7 @@ void Graph<T>::setDirected(bool directed) {
     // set the direction status
 
     // Solution:
-        this->directed = directed;
+    this->directed = directed;
 
 }
 
@@ -248,7 +244,7 @@ void Graph<T>::setWeighted(bool weighted) {
     // set the weighted status
 
     // Solution:
-        this->weighted = weighted;
+    this->weighted = weighted;
 
 }
 
@@ -259,20 +255,24 @@ void Graph<T>::updateAdjacencyMatrix() {
     // weight of the edge for weighted graphs, 0 otherwise
 
     // Solution:
-     int size = vertices.size();
-    adjacencyMatrix.assign(size, vector<int>(size, 0));
-    adjacencyMatrixWeighted.assign(size, vector<int>(size, 0));
+     adjacencyMatrix.assign(vertices.size(), vector<int>(vertices.size(), 0));
+    adjacencyMatrixWeighted.assign(vertices.size(), vector<int>(vertices.size(), 0));
 
-    for (auto edge : edges) {
-        int srcIdx = find(vertices.begin(), vertices.end(), edge->getSource()) - vertices.begin();
-        int destIdx = find(vertices.begin(), vertices.end(), edge->getDestination()) - vertices.begin();
+    for (const auto& edge : edges) {
+        auto srcIt = std::find(vertices.begin(), vertices.end(), edge->getSource());
+        auto destIt = std::find(vertices.begin(), vertices.end(), edge->getDestination());
+        if (srcIt != vertices.end() && destIt != vertices.end()) {
+            int srcIdx = std::distance(vertices.begin(), srcIt);
+            int destIdx = std::distance(vertices.begin(), destIt);
 
-        adjacencyMatrix[srcIdx][destIdx] = 1;
-        adjacencyMatrixWeighted[srcIdx][destIdx] = edge->getWeight();
+            // Assign weights to the adjacency matrix
+            adjacencyMatrix[srcIdx][destIdx] = 1;
+            adjacencyMatrixWeighted[srcIdx][destIdx] = edge->getWeight();
 
-        if (!directed) {
-            adjacencyMatrix[destIdx][srcIdx] = 1;
-            adjacencyMatrixWeighted[destIdx][srcIdx] = edge->getWeight();
+            if (!directed) {
+                adjacencyMatrix[destIdx][srcIdx] = 1;
+                adjacencyMatrixWeighted[destIdx][srcIdx] = edge->getWeight();
+            }
         }
     }
 }
@@ -282,7 +282,7 @@ vector<vector<int>> Graph<T>::getAdjacencyMatrix() {
     // Return the adjacency matrix of the graph
 
     // Solution:
-        return adjacencyMatrix;
+    return adjacencyMatrix;
 
 }
 
