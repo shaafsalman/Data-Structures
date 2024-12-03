@@ -310,45 +310,11 @@ vector<vector<shared_ptr<Vertex<T>>>> Graph<T>::stronglyConnectedComponents() {
 // BONUS TASK 1 FOR 5 MARKS
 template <class T>
 vector<shared_ptr<Graph<T>>> Graph<T>::SpanningTrees() {
-    // Vector to store the spanning trees
-    vector<shared_ptr<Graph<T>>> spanningTrees;
+    // Find all the spanning trees of the graph
+    // Return the spanning trees as a vector of Graph objects
 
-    // Helper DFS function to explore the graph and build a spanning tree
-    std::function<void(shared_ptr<Vertex<T>>, std::unordered_map<shared_ptr<Vertex<T>>, bool>&, shared_ptr<Graph<T>>)> 
-    dfsSpanningTree = [&](shared_ptr<Vertex<T>> vertex, 
-                           std::unordered_map<shared_ptr<Vertex<T>>, bool>& visited, 
-                           shared_ptr<Graph<T>> tree) {
-        visited[vertex] = true;
-        tree->addVertex(vertex->getData());  // Add the current vertex to the tree
-        for (auto neighbor : this->getAdjacentVertices(vertex)) {  // Use 'this' to access member function
-            if (!visited[neighbor]) {
-                tree->addEdge(vertex->getData(), neighbor->getData());  // Add edge to the tree
-                dfsSpanningTree(neighbor, visited, tree);  // Recursive call
-            }
-        }
-    };
-
-    // If the graph has no vertices, return an empty vector
-    if (vertices.empty()) {
-        return spanningTrees;
-    }
-
-    // Initialize visited map
-    unordered_map<shared_ptr<Vertex<T>>, bool> visited;
-
-    // Iterate over all vertices, performing DFS to find each connected component
-    for (auto vertex : vertices) {
-        if (!visited[vertex]) {
-            // Create a new graph object to store the spanning tree for the component
-            shared_ptr<Graph<T>> tree = make_shared<Graph<T>>();
-            dfsSpanningTree(vertex, visited, tree);  // Start DFS from the unvisited vertex
-            spanningTrees.push_back(tree);  // Add the tree to the result
-        }
-    }
-
-    return spanningTrees;  // Return the vector of spanning trees
+    // Solution:
 }
-
 
 // BONUS TASK 2 FOR 5 MARKS
 

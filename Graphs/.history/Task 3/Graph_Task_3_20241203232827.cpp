@@ -234,121 +234,91 @@ shared_ptr<Graph<T>> Graph<T>::minimumSpanningTree() {
 
 template <class T>
 vector<vector<shared_ptr<Vertex<T>>>> Graph<T>::stronglyConnectedComponents() {
-    // Vector to store strongly connected components
+    // Find all the strongly connected components of the graph
+    // A strongly connected component is a set of vertices in a directed graph where every vertex is reachable from every other vertex in the same set
+    // Return the strongly connected components as a vector of vectors of vertices
+
+    // Solution:
     vector<vector<shared_ptr<Vertex<T>>>> sccs;
+    unordered_set<shared_ptr<Vertex<T>>> visited;
+    stack<shared_ptr<Vertex<T>>> finishStack;
 
-    // Step 1: Perform DFS on the original graph to get the finishing order
-    stack<shared_ptr<Vertex<T>>> finishOrder;
-    unordered_map<shared_ptr<Vertex<T>>, bool> visited;
-
-    // Helper DFS function to fill the finishing order stack
-    auto dfsOriginal = [&visited, &finishOrder](shared_ptr<Vertex<T>> vertex, auto&& dfsOriginal) -> void {
-        visited[vertex] = true;
-        for (auto neighbor : getAdjacentVertices(vertex)) {
-            if (!visited[neighbor]) {
-                dfsOriginal(neighbor, dfsOriginal);
-            }
-        }
-        finishOrder.push(vertex);
-    };
-
+    // Step 1: Perform a DFS and push vertices onto a stack based on their finish time
     for (auto vertex : vertices) {
-        if (!visited[vertex]) {
-            dfsOriginal(vertex, dfsOriginal);
+        if (visited.find(vertex) == visited.end()) {
+            dfsForFinishTime(vertex, visited, finishStack);
         }
     }
 
-    // Step 2: Transpose the graph (reverse the edges)
-    Graph<T> transposedGraph;
-    transposedGraph.setDirected(true);  // The transposed graph is directed
+    // Step 2: Reverse the graph (reverse all edges)
+    Graph<T> reversedGraph = reverseGraph();
 
-    for (auto vertex : vertices) {
-        transposedGraph.addVertex(vertex->getData());
-    }
-
-    for (auto edge : edges) {
-        transposedGraph.addEdge(edge->getDestination()->getData(), edge->getSource()->getData(), edge->getWeight());
-    }
-
-    // Step 3: Perform DFS on the transposed graph in the order of the finishing times
+    // Step 3: Perform DFS in the order of the finish times in the stack
     visited.clear();
-    while (!finishOrder.empty()) {
-        shared_ptr<Vertex<T>> vertex = finishOrder.top();
-        finishOrder.pop();
+    while (!finishStack.empty()) {
+        auto vertex = finishStack.top();
+        finishStack.pop();
 
-        if (!visited[vertex]) {
-            vector<shared_ptr<Vertex<T>>> scc;
-            // Perform DFS on the transposed graph and collect all the vertices in this SCC
-            stack<shared_ptr<Vertex<T>>> dfsStack;
-            dfsStack.push(vertex);
-
-            while (!dfsStack.empty()) {
-                shared_ptr<Vertex<T>> currentVertex = dfsStack.top();
-                dfsStack.pop();
-
-                if (!visited[currentVertex]) {
-                    visited[currentVertex] = true;
-                    scc.push_back(currentVertex);
-
-                    for (auto neighbor : transposedGraph.getAdjacentVertices(currentVertex)) {
-                        if (!visited[neighbor]) {
-                            dfsStack.push(neighbor);
-                        }
-                    }
-                }
-            }
-            sccs.push_back(scc);  // Add the found SCC to the result
+        if (visited.find(vertex) == visited.end()) {
+            vector<shared_ptr<Vertex<T>>> component;
+            dfsForSCCs(vertex, visited, component, reversedGraph);
+            sccs.push_back(component);
         }
     }
 
-    return sccs;  // Return the strongly connected components
+    return sccs;
 }
 
+template <class T>
+void Graph<T>::dfsForFinishTime(shared_ptr<Vertex<T>> vertex, unordered_set<shared_ptr<Vertex<T>>>& visited, stack<shared_ptr<Vertex<T>>>& finishStack) {
+    visited.insert(vertex);
+
+    for (auto adjVertex : getAdjacentVertices(vertex)) {
+        if (visited.find(adjVertex) == visited.end()) {
+            dfsForFinishTime(adjVertex, visited, finishStack);
+        }
+    }
+
+    finishStack.push(vertex);  // Push the vertex onto the stack after finishing its DFS
+}
+
+template <class T>
+Graph<T> Graph<T>::reverseGraph() {
+    // Create a reversed graph by reversing all edges
+    Graph<T> reversedGraph;
+    
+    for (auto vertex : vertices) {
+        reversedGraph.addVertex(vertex);  // Add vertex to the reversed graph
+        for (auto adjVertex : getAdjacentVertices(vertex)) {
+            reversedGraph.addEdge(adjVertex, vertex);  // Reverse the edge direction
+        }
+    }
+
+    return reversedGraph;
+}
+
+template <class T>
+void Graph<T>::dfsForSCCs(shared_ptr<Vertex<T>> vertex, unordered_set<shared_ptr<Vertex<T>>>& visited, vector<shared_ptr<Vertex<T>>>& component, Graph<T>& reversedGraph) {
+    visited.insert(vertex);
+    component.push_back(vertex);
+
+    for (auto adjVertex : reversedGraph.getAdjacentVertices(vertex)) {
+        if (visited.find(adjVertex) == visited.end()) {
+            dfsForSCCs(adjVertex, visited, component, reversedGraph);
+        }
+    }
+}
 
 // ::::::::::::::::::::::::::::::: BONUS TASKS :::::::::::::::::::::::::::::::::::
 
 // BONUS TASK 1 FOR 5 MARKS
 template <class T>
 vector<shared_ptr<Graph<T>>> Graph<T>::SpanningTrees() {
-    // Vector to store the spanning trees
-    vector<shared_ptr<Graph<T>>> spanningTrees;
+    // Find all the spanning trees of the graph
+    // Return the spanning trees as a vector of Graph objects
 
-    // Helper DFS function to explore the graph and build a spanning tree
-    std::function<void(shared_ptr<Vertex<T>>, std::unordered_map<shared_ptr<Vertex<T>>, bool>&, shared_ptr<Graph<T>>)> 
-    dfsSpanningTree = [&](shared_ptr<Vertex<T>> vertex, 
-                           std::unordered_map<shared_ptr<Vertex<T>>, bool>& visited, 
-                           shared_ptr<Graph<T>> tree) {
-        visited[vertex] = true;
-        tree->addVertex(vertex->getData());  // Add the current vertex to the tree
-        for (auto neighbor : this->getAdjacentVertices(vertex)) {  // Use 'this' to access member function
-            if (!visited[neighbor]) {
-                tree->addEdge(vertex->getData(), neighbor->getData());  // Add edge to the tree
-                dfsSpanningTree(neighbor, visited, tree);  // Recursive call
-            }
-        }
-    };
-
-    // If the graph has no vertices, return an empty vector
-    if (vertices.empty()) {
-        return spanningTrees;
-    }
-
-    // Initialize visited map
-    unordered_map<shared_ptr<Vertex<T>>, bool> visited;
-
-    // Iterate over all vertices, performing DFS to find each connected component
-    for (auto vertex : vertices) {
-        if (!visited[vertex]) {
-            // Create a new graph object to store the spanning tree for the component
-            shared_ptr<Graph<T>> tree = make_shared<Graph<T>>();
-            dfsSpanningTree(vertex, visited, tree);  // Start DFS from the unvisited vertex
-            spanningTrees.push_back(tree);  // Add the tree to the result
-        }
-    }
-
-    return spanningTrees;  // Return the vector of spanning trees
+    // Solution:
 }
-
 
 // BONUS TASK 2 FOR 5 MARKS
 

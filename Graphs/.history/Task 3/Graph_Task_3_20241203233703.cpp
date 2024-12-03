@@ -232,77 +232,92 @@ shared_ptr<Graph<T>> Graph<T>::minimumSpanningTree() {
 }
 
 
+// template <class T>
+// vector<vector<shared_ptr<Vertex<T>>>> Graph<T>::stronglyConnectedComponents() {
+//     // Find all the strongly connected components of the graph
+//     // Return the strongly connected components as a vector of vectors of vertices
+
+//     // Solution:
+// }
+
 template <class T>
-vector<vector<shared_ptr<Vertex<T>>>> Graph<T>::stronglyConnectedComponents() {
-    // Vector to store strongly connected components
-    vector<vector<shared_ptr<Vertex<T>>>> sccs;
+vector<shared_ptr<Graph<T>>> Graph<T>::SpanningTrees() {
+    vector<shared_ptr<Graph<T>>> spanningTrees;
 
-    // Step 1: Perform DFS on the original graph to get the finishing order
-    stack<shared_ptr<Vertex<T>>> finishOrder;
-    unordered_map<shared_ptr<Vertex<T>>, bool> visited;
+    // Create a vector of all edges and sort them by weight in ascending order
+    vector<shared_ptr<Edge<T>>> allEdges = getAllEdges();
+    sort(allEdges.begin(), allEdges.end(), [](const shared_ptr<Edge<T>>& e1, const shared_ptr<Edge<T>>& e2) {
+        return e1->getWeight() < e2->getWeight();
+    });
 
-    // Helper DFS function to fill the finishing order stack
-    auto dfsOriginal = [&visited, &finishOrder](shared_ptr<Vertex<T>> vertex, auto&& dfsOriginal) -> void {
-        visited[vertex] = true;
-        for (auto neighbor : getAdjacentVertices(vertex)) {
-            if (!visited[neighbor]) {
-                dfsOriginal(neighbor, dfsOriginal);
-            }
+    // Create a disjoint set (union-find) data structure to keep track of connected components
+    unordered_map<shared_ptr<Vertex<T>>, shared_ptr<Vertex<T>>> parent;
+    unordered_map<shared_ptr<Vertex<T>>, int> rank;
+
+    // Initialize disjoint set: each vertex is its own parent
+    for (auto& vertex : vertices) {
+        parent[vertex] = vertex;
+        rank[vertex] = 0;
+    }
+
+    // Helper function to find the root of a vertex
+    function<shared_ptr<Vertex<T>>(shared_ptr<Vertex<T>>)> find = [&](shared_ptr<Vertex<T>> vertex) -> shared_ptr<Vertex<T>> {
+        if (parent[vertex] != vertex) {
+            parent[vertex] = find(parent[vertex]);  // Path compression
         }
-        finishOrder.push(vertex);
+        return parent[vertex];
     };
 
-    for (auto vertex : vertices) {
-        if (!visited[vertex]) {
-            dfsOriginal(vertex, dfsOriginal);
-        }
-    }
+    // Helper function to union two sets
+    function<void(shared_ptr<Vertex<T>>, shared_ptr<Vertex<T>>)> unionSets = [&](shared_ptr<Vertex<T>> u, shared_ptr<Vertex<T>> v) {
+        shared_ptr<Vertex<T>> rootU = find(u);
+        shared_ptr<Vertex<T>> rootV = find(v);
 
-    // Step 2: Transpose the graph (reverse the edges)
-    Graph<T> transposedGraph;
-    transposedGraph.setDirected(true);  // The transposed graph is directed
-
-    for (auto vertex : vertices) {
-        transposedGraph.addVertex(vertex->getData());
-    }
-
-    for (auto edge : edges) {
-        transposedGraph.addEdge(edge->getDestination()->getData(), edge->getSource()->getData(), edge->getWeight());
-    }
-
-    // Step 3: Perform DFS on the transposed graph in the order of the finishing times
-    visited.clear();
-    while (!finishOrder.empty()) {
-        shared_ptr<Vertex<T>> vertex = finishOrder.top();
-        finishOrder.pop();
-
-        if (!visited[vertex]) {
-            vector<shared_ptr<Vertex<T>>> scc;
-            // Perform DFS on the transposed graph and collect all the vertices in this SCC
-            stack<shared_ptr<Vertex<T>>> dfsStack;
-            dfsStack.push(vertex);
-
-            while (!dfsStack.empty()) {
-                shared_ptr<Vertex<T>> currentVertex = dfsStack.top();
-                dfsStack.pop();
-
-                if (!visited[currentVertex]) {
-                    visited[currentVertex] = true;
-                    scc.push_back(currentVertex);
-
-                    for (auto neighbor : transposedGraph.getAdjacentVertices(currentVertex)) {
-                        if (!visited[neighbor]) {
-                            dfsStack.push(neighbor);
-                        }
-                    }
-                }
+        if (rootU != rootV) {
+            if (rank[rootU] < rank[rootV]) {
+                parent[rootU] = rootV;
+            } else if (rank[rootU] > rank[rootV]) {
+                parent[rootV] = rootU;
+            } else {
+                parent[rootV] = rootU;
+                rank[rootU]++;
             }
-            sccs.push_back(scc);  // Add the found SCC to the result
+        }
+    };
+
+    // Kruskal's algorithm to find the MST
+    shared_ptr<Graph<T>> mst = make_shared<Graph<T>>(this->isDirected(), this->isWeighted());
+    for (auto& edge : allEdges) {
+        shared_ptr<Vertex<T>> u = edge->getSource();
+        shared_ptr<Vertex<T>> v = edge->getDestination();
+
+        // If adding this edge doesn't form a cycle, add it to the MST
+        if (find(u) != find(v)) {
+            mst->addEdge(u->getData(), v->getData(), edge->getWeight());
+            unionSets(u, v);
         }
     }
 
-    return sccs;  // Return the strongly connected components
+    // Check if the MST includes all vertices (i.e., it's a spanning tree)
+    if (mst->getAllEdges().size() == vertices.size() - 1) {
+        spanningTrees.push_back(mst);
+    }
+
+    return spanningTrees;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 // ::::::::::::::::::::::::::::::: BONUS TASKS :::::::::::::::::::::::::::::::::::
@@ -310,45 +325,11 @@ vector<vector<shared_ptr<Vertex<T>>>> Graph<T>::stronglyConnectedComponents() {
 // BONUS TASK 1 FOR 5 MARKS
 template <class T>
 vector<shared_ptr<Graph<T>>> Graph<T>::SpanningTrees() {
-    // Vector to store the spanning trees
-    vector<shared_ptr<Graph<T>>> spanningTrees;
+    // Find all the spanning trees of the graph
+    // Return the spanning trees as a vector of Graph objects
 
-    // Helper DFS function to explore the graph and build a spanning tree
-    std::function<void(shared_ptr<Vertex<T>>, std::unordered_map<shared_ptr<Vertex<T>>, bool>&, shared_ptr<Graph<T>>)> 
-    dfsSpanningTree = [&](shared_ptr<Vertex<T>> vertex, 
-                           std::unordered_map<shared_ptr<Vertex<T>>, bool>& visited, 
-                           shared_ptr<Graph<T>> tree) {
-        visited[vertex] = true;
-        tree->addVertex(vertex->getData());  // Add the current vertex to the tree
-        for (auto neighbor : this->getAdjacentVertices(vertex)) {  // Use 'this' to access member function
-            if (!visited[neighbor]) {
-                tree->addEdge(vertex->getData(), neighbor->getData());  // Add edge to the tree
-                dfsSpanningTree(neighbor, visited, tree);  // Recursive call
-            }
-        }
-    };
-
-    // If the graph has no vertices, return an empty vector
-    if (vertices.empty()) {
-        return spanningTrees;
-    }
-
-    // Initialize visited map
-    unordered_map<shared_ptr<Vertex<T>>, bool> visited;
-
-    // Iterate over all vertices, performing DFS to find each connected component
-    for (auto vertex : vertices) {
-        if (!visited[vertex]) {
-            // Create a new graph object to store the spanning tree for the component
-            shared_ptr<Graph<T>> tree = make_shared<Graph<T>>();
-            dfsSpanningTree(vertex, visited, tree);  // Start DFS from the unvisited vertex
-            spanningTrees.push_back(tree);  // Add the tree to the result
-        }
-    }
-
-    return spanningTrees;  // Return the vector of spanning trees
+    // Solution:
 }
-
 
 // BONUS TASK 2 FOR 5 MARKS
 

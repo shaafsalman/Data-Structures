@@ -3,8 +3,7 @@
 #include <iostream>
 #include <vector>
 #include <memory> 
-#include <unordered_set> // Add this include for unordered_set
-#include <stack> 
+
 #include "Vertex.h"
 #include "Edge.h"
 
@@ -85,9 +84,6 @@ public:
     vector<vector<shared_ptr<Vertex<T>>>> connectedComponents();
 
     // Task 3 Helper functions
-     void dfsForFinishTime(shared_ptr<Vertex<T>> vertex, unordered_set<shared_ptr<Vertex<T>>>& visited, stack<shared_ptr<Vertex<T>>>& finishStack);
-    Graph<T> reverseGraph();
-    void dfsForSCCs(shared_ptr<Vertex<T>> vertex, unordered_set<shared_ptr<Vertex<T>>>& visited, vector<shared_ptr<Vertex<T>>>& component, Graph<T>& reversedGraph);
 
 
     

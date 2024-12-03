@@ -72,6 +72,7 @@
     "initializer_list": "cpp",
     "xhash": "cpp",
     "xtree": "cpp",
-    "fstream": "cpp"
+    "fstream": "cpp",
+    "map": "cpp"
   }
 }

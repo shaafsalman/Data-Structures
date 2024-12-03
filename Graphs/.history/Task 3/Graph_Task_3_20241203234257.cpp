@@ -313,35 +313,27 @@ vector<shared_ptr<Graph<T>>> Graph<T>::SpanningTrees() {
     // Vector to store the spanning trees
     vector<shared_ptr<Graph<T>>> spanningTrees;
 
-    // Helper DFS function to explore the graph and build a spanning tree
-    std::function<void(shared_ptr<Vertex<T>>, std::unordered_map<shared_ptr<Vertex<T>>, bool>&, shared_ptr<Graph<T>>)> 
-    dfsSpanningTree = [&](shared_ptr<Vertex<T>> vertex, 
-                           std::unordered_map<shared_ptr<Vertex<T>>, bool>& visited, 
-                           shared_ptr<Graph<T>> tree) {
+    // Helper DFS function to explore a graph and build a spanning tree
+    auto dfsSpanningTree = [&spanningTrees](shared_ptr<Vertex<T>> vertex, auto&& dfsSpanningTree, 
+                                             unordered_map<shared_ptr<Vertex<T>>, bool>& visited, 
+                                             shared_ptr<Graph<T>> tree) {
         visited[vertex] = true;
         tree->addVertex(vertex->getData());  // Add the current vertex to the tree
-        for (auto neighbor : this->getAdjacentVertices(vertex)) {  // Use 'this' to access member function
+        for (auto neighbor : getAdjacentVertices(vertex)) {
             if (!visited[neighbor]) {
                 tree->addEdge(vertex->getData(), neighbor->getData());  // Add edge to the tree
-                dfsSpanningTree(neighbor, visited, tree);  // Recursive call
+                dfsSpanningTree(neighbor, dfsSpanningTree, visited, tree);
             }
         }
     };
 
-    // If the graph has no vertices, return an empty vector
-    if (vertices.empty()) {
-        return spanningTrees;
-    }
-
-    // Initialize visited map
+    // Perform DFS to create a spanning tree from every unvisited vertex
     unordered_map<shared_ptr<Vertex<T>>, bool> visited;
-
-    // Iterate over all vertices, performing DFS to find each connected component
     for (auto vertex : vertices) {
         if (!visited[vertex]) {
-            // Create a new graph object to store the spanning tree for the component
+            // Create a new graph object to store the spanning tree
             shared_ptr<Graph<T>> tree = make_shared<Graph<T>>();
-            dfsSpanningTree(vertex, visited, tree);  // Start DFS from the unvisited vertex
+            dfsSpanningTree(vertex, dfsSpanningTree, visited, tree);
             spanningTrees.push_back(tree);  // Add the tree to the result
         }
     }
