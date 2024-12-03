@@ -59,7 +59,7 @@ vector<shared_ptr<Human>> Human::getFriends() {
 
     auto adjacentVertices = this->Friends.getAdjacentVertices(thisVertex);
     for (auto vertex : adjacentVertices) {
-        friendsList.push_back(vertex->getData());
+        friendsList.push_back(vertex);
     }
     return friendsList;
 }
@@ -83,7 +83,7 @@ void SocialNetwork::removeHuman(shared_ptr<Human> human) {
     if (!humanVertex) return;
 
     for (auto friendVertex : this->Network.getAdjacentVertices(humanVertex)) {
-        this->Network.removeEdge(human, friendVertex->getData());
+        this->Network.removeEdge(human, friendVertex);
     }
     this->Network.removeVertex(human);
     this->NumberOfHumans--;
@@ -113,11 +113,13 @@ vector<shared_ptr<Human>> SocialNetwork::getMutualFriends(shared_ptr<Human> huma
     auto friends1 = this->Network.getAdjacentVertices(vertex1);
     auto friends2 = this->Network.getAdjacentVertices(vertex2);
 
+    unordered_set<shared_ptr<Human>> set1;
     for (auto f1 : friends1) {
-        for (auto f2 : friends2) {
-            if (f1->getData() == f2->getData()) {
-                mutualFriends.push_back(f1->getData());
-            }
+        set1.insert(f1);
+    }
+    for (auto f2 : friends2) {
+        if (set1.count(f2)) {
+            mutualFriends.push_back(f2);
         }
     }
     return mutualFriends;
@@ -130,7 +132,7 @@ vector<vector<shared_ptr<Human>>> SocialNetwork::getGroups() {
     for (auto& component : components) {
         vector<shared_ptr<Human>> group;
         for (auto& vertex : component) {
-            group.push_back(vertex->getData());
+            group.push_back(vertex);
         }
         groups.push_back(group);
     }
@@ -153,7 +155,7 @@ vector<shared_ptr<Human>> SocialNetwork::connectionOrder(shared_ptr<Human> human
 
     auto path = this->Network.shortestPath(vertex1, vertex2);
     for (auto& vertex : path) {
-        connectionChain.push_back(vertex->getData());
+        connectionChain.push_back(vertex);
     }
     return connectionChain;
 }

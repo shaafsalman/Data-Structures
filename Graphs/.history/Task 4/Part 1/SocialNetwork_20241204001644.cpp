@@ -36,9 +36,6 @@ int Human::getAge() {
 }
 
 void Human::addFriend(shared_ptr<Human> Friend) {
-    if (!this->Friends.getVertex(shared_from_this())) {
-        this->Friends.addVertex(shared_from_this());
-    }
     if (!this->Friends.getVertex(Friend)) {
         this->Friends.addVertex(Friend);
     }
