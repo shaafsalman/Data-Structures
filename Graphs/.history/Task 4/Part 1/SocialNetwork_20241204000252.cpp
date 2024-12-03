@@ -36,26 +36,26 @@ int Human::getAge() {
 }
 
 void Human::addFriend(shared_ptr<Human> Friend) {
-    if (!this->Friends.getVertex(Friend)) {
-        this->Friends.addVertex(Friend);
-    }
-    this->Friends.addEdge(shared_from_this(), Friend);
+    auto thisVertex = make_shared<Vertex<shared_ptr<Human>>>(shared_from_this());
+    auto friendVertex = make_shared<Vertex<shared_ptr<Human>>>(Friend);
+    this->Friends.addVertex(shared_from_this());
+    this->Friends.addVertex(Friend);
+    this->Friends.addEdge(thisVertex, friendVertex);
 }
 
 void Human::removeFriend(shared_ptr<Human> Friend) {
-    if (this->Friends.getVertex(Friend)) {
-        this->Friends.removeEdge(shared_from_this(), Friend);
-        this->Friends.removeVertex(Friend);
+    auto thisVertex = this->Friends.getVertex(shared_from_this());
+    auto friendVertex = this->Friends.getVertex(Friend);
+    if (thisVertex && friendVertex) {
+        this->Friends.removeEdge(thisVertex, friendVertex);
+        this->Friends.removeVertex(friendVertex);
     }
 }
 
 vector<shared_ptr<Human>> Human::getFriends() {
     vector<shared_ptr<Human>> friendsList;
-    auto thisVertex = this->Friends.getVertex(shared_from_this());
-    if (!thisVertex) return friendsList;
-
-    auto adjacentVertices = this->Friends.getAdjacentVertices(thisVertex);
-    for (auto vertex : adjacentVertices) {
+    auto vertices = this->Friends.getAllVertices();
+    for (auto vertex : vertices) {
         friendsList.push_back(vertex->getData());
     }
     return friendsList;
@@ -69,10 +69,9 @@ SocialNetwork::SocialNetwork() {
 }
 
 void SocialNetwork::addHuman(shared_ptr<Human> human) {
-    if (!this->Network.getVertex(human)) {
-        this->Network.addVertex(human);
-        this->NumberOfHumans++;
-    }
+    auto humanVertex = make_shared<Vertex<shared_ptr<Human>>>(human);
+    this->Network.addVertex(humanVertex->getData());
+    this->NumberOfHumans++;
 }
 
 void SocialNetwork::removeHuman(shared_ptr<Human> human) {
@@ -80,24 +79,39 @@ void SocialNetwork::removeHuman(shared_ptr<Human> human) {
     if (!humanVertex) return;
 
     for (auto friendVertex : this->Network.getAdjacentVertices(humanVertex)) {
-        this->Network.removeEdge(human, friendVertex->getData());
+        this->Network.removeEdge(humanVertex, friendVertex);
     }
-    this->Network.removeVertex(human);
+    this->Network.removeVertex(humanVertex);
     this->NumberOfHumans--;
 }
 
 void SocialNetwork::addFriendship(shared_ptr<Human> human1, shared_ptr<Human> human2) {
-    if (!this->Network.getVertex(human1)) {
-        this->Network.addVertex(human1);
+    auto vertex1 = this->Network.getVertex(human1);
+    auto vertex2 = this->Network.getVertex(human2);
+
+    if (vertex1 && vertex2) {
+        this->Network.addEdge(vertex1, vertex2);
     }
-    if (!this->Network.getVertex(human2)) {
-        this->Network.addVertex(human2);
-    }
-    this->Network.addEdge(human1, human2);
 }
 
 void SocialNetwork::removeFriendship(shared_ptr<Human> human1, shared_ptr<Human> human2) {
-    this->Network.removeEdge(human1, human2);
+    auto vertex1 = this->Network.getVertex(human1);
+    auto vertex2 = this->Network.getVertex(human2);
+
+    if (vertex1 && vertex2) {
+        this->Network.removeEdge(vertex1, vertex2);
+    }
+}
+
+vector<shared_ptr<Human>> SocialNetwork::getFriends(shared_ptr<Human> human) {
+    vector<shared_ptr<Human>> friendsList;
+    auto humanVertex = this->Network.getVertex(human);
+    if (!humanVertex) return friendsList;
+
+    for (auto vertex : this->Network.getAdjacentVertices(humanVertex)) {
+        friendsList.push_back(vertex->getData());
+    }
+    return friendsList;
 }
 
 vector<shared_ptr<Human>> SocialNetwork::getMutualFriends(shared_ptr<Human> human1, shared_ptr<Human> human2) {
@@ -112,7 +126,7 @@ vector<shared_ptr<Human>> SocialNetwork::getMutualFriends(shared_ptr<Human> huma
 
     for (auto f1 : friends1) {
         for (auto f2 : friends2) {
-            if (f1->getData() == f2->getData()) {
+            if (f1 == f2) {
                 mutualFriends.push_back(f1->getData());
             }
         }

@@ -36,29 +36,17 @@ int Human::getAge() {
 }
 
 void Human::addFriend(shared_ptr<Human> Friend) {
-    if (!this->Friends.getVertex(Friend)) {
-        this->Friends.addVertex(Friend);
-    }
+    this->Friends.addVertex(Friend);
     this->Friends.addEdge(shared_from_this(), Friend);
 }
 
 void Human::removeFriend(shared_ptr<Human> Friend) {
-    if (this->Friends.getVertex(Friend)) {
-        this->Friends.removeEdge(shared_from_this(), Friend);
-        this->Friends.removeVertex(Friend);
-    }
+    this->Friends.removeEdge(shared_from_this(), Friend);
+    this->Friends.removeVertex(Friend);
 }
 
 vector<shared_ptr<Human>> Human::getFriends() {
-    vector<shared_ptr<Human>> friendsList;
-    auto thisVertex = this->Friends.getVertex(shared_from_this());
-    if (!thisVertex) return friendsList;
-
-    auto adjacentVertices = this->Friends.getAdjacentVertices(thisVertex);
-    for (auto vertex : adjacentVertices) {
-        friendsList.push_back(vertex->getData());
-    }
-    return friendsList;
+    return this->Friends.getAllVertices();
 }
 
 // -------------------- SocialNetwork Class Methods --------------------
@@ -69,30 +57,19 @@ SocialNetwork::SocialNetwork() {
 }
 
 void SocialNetwork::addHuman(shared_ptr<Human> human) {
-    if (!this->Network.getVertex(human)) {
-        this->Network.addVertex(human);
-        this->NumberOfHumans++;
-    }
+    this->Network.addVertex(human);
+    this->NumberOfHumans++;
 }
 
 void SocialNetwork::removeHuman(shared_ptr<Human> human) {
-    auto humanVertex = this->Network.getVertex(human);
-    if (!humanVertex) return;
-
-    for (auto friendVertex : this->Network.getAdjacentVertices(humanVertex)) {
-        this->Network.removeEdge(human, friendVertex->getData());
+    for (auto friendHuman : this->Network.getAdjacentVertices(human)) {
+        this->Network.removeEdge(human, friendHuman);
     }
     this->Network.removeVertex(human);
     this->NumberOfHumans--;
 }
 
 void SocialNetwork::addFriendship(shared_ptr<Human> human1, shared_ptr<Human> human2) {
-    if (!this->Network.getVertex(human1)) {
-        this->Network.addVertex(human1);
-    }
-    if (!this->Network.getVertex(human2)) {
-        this->Network.addVertex(human2);
-    }
     this->Network.addEdge(human1, human2);
 }
 
@@ -100,20 +77,19 @@ void SocialNetwork::removeFriendship(shared_ptr<Human> human1, shared_ptr<Human>
     this->Network.removeEdge(human1, human2);
 }
 
+vector<shared_ptr<Human>> SocialNetwork::getFriends(shared_ptr<Human> human) {
+    return this->Network.getAdjacentVertices(human);
+}
+
 vector<shared_ptr<Human>> SocialNetwork::getMutualFriends(shared_ptr<Human> human1, shared_ptr<Human> human2) {
     vector<shared_ptr<Human>> mutualFriends;
-    auto vertex1 = this->Network.getVertex(human1);
-    auto vertex2 = this->Network.getVertex(human2);
-
-    if (!vertex1 || !vertex2) return mutualFriends;
-
-    auto friends1 = this->Network.getAdjacentVertices(vertex1);
-    auto friends2 = this->Network.getAdjacentVertices(vertex2);
+    auto friends1 = this->Network.getAdjacentVertices(human1);
+    auto friends2 = this->Network.getAdjacentVertices(human2);
 
     for (auto f1 : friends1) {
         for (auto f2 : friends2) {
-            if (f1->getData() == f2->getData()) {
-                mutualFriends.push_back(f1->getData());
+            if (f1 == f2) {
+                mutualFriends.push_back(f1);
             }
         }
     }
@@ -135,20 +111,13 @@ vector<vector<shared_ptr<Human>>> SocialNetwork::getGroups() {
 }
 
 bool SocialNetwork::canBeConnected(shared_ptr<Human> human1, shared_ptr<Human> human2) {
-    auto vertex1 = this->Network.getVertex(human1);
-    auto vertex2 = this->Network.getVertex(human2);
-
-    return vertex1 && vertex2 && !this->Network.shortestPath(vertex1, vertex2).empty();
+    return !this->Network.shortestPath(human1, human2).empty();
 }
 
 vector<shared_ptr<Human>> SocialNetwork::connectionOrder(shared_ptr<Human> human1, shared_ptr<Human> human2) {
     vector<shared_ptr<Human>> connectionChain;
-    auto vertex1 = this->Network.getVertex(human1);
-    auto vertex2 = this->Network.getVertex(human2);
+    auto path = this->Network.shortestPath(human1, human2);
 
-    if (!vertex1 || !vertex2) return connectionChain;
-
-    auto path = this->Network.shortestPath(vertex1, vertex2);
     for (auto& vertex : path) {
         connectionChain.push_back(vertex->getData());
     }

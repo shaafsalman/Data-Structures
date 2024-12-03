@@ -51,12 +51,9 @@ void Human::removeFriend(shared_ptr<Human> Friend) {
 
 vector<shared_ptr<Human>> Human::getFriends() {
     vector<shared_ptr<Human>> friendsList;
-    auto thisVertex = this->Friends.getVertex(shared_from_this());
-    if (!thisVertex) return friendsList;
-
-    auto adjacentVertices = this->Friends.getAdjacentVertices(thisVertex);
+    auto adjacentVertices = this->Friends.getAdjacentVertices(this->Friends.getVertex(shared_from_this()));
     for (auto vertex : adjacentVertices) {
-        friendsList.push_back(vertex->getData());
+        friendsList.push_back(vertex);
     }
     return friendsList;
 }
@@ -98,6 +95,17 @@ void SocialNetwork::addFriendship(shared_ptr<Human> human1, shared_ptr<Human> hu
 
 void SocialNetwork::removeFriendship(shared_ptr<Human> human1, shared_ptr<Human> human2) {
     this->Network.removeEdge(human1, human2);
+}
+
+vector<shared_ptr<Human>> SocialNetwork::getFriends(shared_ptr<Human> human) {
+    vector<shared_ptr<Human>> friendsList;
+    auto humanVertex = this->Network.getVertex(human);
+    if (!humanVertex) return friendsList;
+
+    for (auto vertex : this->Network.getAdjacentVertices(humanVertex)) {
+        friendsList.push_back(vertex->getData());
+    }
+    return friendsList;
 }
 
 vector<shared_ptr<Human>> SocialNetwork::getMutualFriends(shared_ptr<Human> human1, shared_ptr<Human> human2) {
