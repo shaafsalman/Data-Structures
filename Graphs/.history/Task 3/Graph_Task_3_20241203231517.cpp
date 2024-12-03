@@ -182,49 +182,52 @@ vector<shared_ptr<Vertex<T>>> Graph<T>::topologicalSort() {
 
 template <class T>
 shared_ptr<Graph<T>> Graph<T>::minimumSpanningTree() {
-    if (!isWeighted()) {
-        cout << "The graph must be weighted to compute a Minimum Spanning Tree." << endl;
-        return nullptr;
+    if (!isWeighted) {
+        throw logic_error("Minimum spanning tree requires a weighted graph.");
     }
 
-    auto mst = make_shared<Graph<T>>(false, true); // MST is always undirected and weighted
+    auto mst = make_shared<Graph<T>>(isDirected, isWeighted);
 
-    // Use Kruskal's Algorithm for Minimum Spanning Tree
-    vector<tuple<int, shared_ptr<Vertex<T>>, shared_ptr<Vertex<T>>>> edges;
-    for (auto edge : getAllEdges()) {
-        edges.push_back({edge->getWeight(), edge->getSource(), edge->getDestination()});
+    // Copy vertices to the MST
+    for (const auto& vertex : vertices) {
+        mst->addVertex(vertex.first);
     }
 
-    // Sort edges based on their weights
-    sort(edges.begin(), edges.end(), [](const auto &a, const auto &b) {
-        return get<0>(a) < get<0>(b);
+    // Create a vector of all edges (source, destination, weight)
+    vector<tuple<T, T, int>> edges;
+    for (const auto& vertex : vertices) {
+        for (const auto& edge : vertex.second->getEdges()) {
+            if (!isDirected || vertex.first < edge.first->getData()) {
+                edges.push_back({vertex.first, edge.first->getData(), edge.second});
+            }
+        }
+    }
+
+    // Sort edges by weight
+    sort(edges.begin(), edges.end(), [](const auto& a, const auto& b) {
+        return get<2>(a) < get<2>(b);
     });
 
-    // Union-Find data structures
-    unordered_map<shared_ptr<Vertex<T>>, shared_ptr<Vertex<T>>> parent;
-    for (auto vertex : getAllVertices()) {
-        parent[vertex] = vertex;
-    }
-
-    function<shared_ptr<Vertex<T>>(shared_ptr<Vertex<T>>)> findParent = [&](shared_ptr<Vertex<T>> v) {
+    // Use Union-Find to detect cycles
+    unordered_map<T, T> parent;
+    function<T(T)> find = [&](T v) {
         if (parent[v] == v) return v;
-        return parent[v] = findParent(parent[v]);
+        return parent[v] = find(parent[v]);
+    };
+    auto unionSets = [&](T u, T v) {
+        parent[find(u)] = find(v);
     };
 
-    auto unionVertices = [&](shared_ptr<Vertex<T>> u, shared_ptr<Vertex<T>> v) {
-        parent[findParent(u)] = findParent(v);
-    };
-
-    // Add vertices to the MST
-    for (auto vertex : getAllVertices()) {
-        mst->addVertex(vertex->getData());
+    // Initialize Union-Find sets
+    for (const auto& vertex : vertices) {
+        parent[vertex.first] = vertex.first;
     }
 
-    // Process edges to construct MST
-    for (auto &[weight, u, v] : edges) {
-        if (findParent(u) != findParent(v)) {
-            mst->addEdge(u->getData(), v->getData(), weight);
-            unionVertices(u, v);
+    // Add edges to MST, avoiding cycles
+    for (const auto& [u, v, weight] : edges) {
+        if (find(u) != find(v)) {
+            mst->addEdge(u, v, weight);
+            unionSets(u, v);
         }
     }
 

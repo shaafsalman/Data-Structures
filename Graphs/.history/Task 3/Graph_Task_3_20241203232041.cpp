@@ -245,11 +245,51 @@ vector<vector<shared_ptr<Vertex<T>>>> Graph<T>::stronglyConnectedComponents() {
 // BONUS TASK 1 FOR 5 MARKS
 template <class T>
 vector<shared_ptr<Graph<T>>> Graph<T>::SpanningTrees() {
-    // Find all the spanning trees of the graph
-    // Return the spanning trees as a vector of Graph objects
+    vector<shared_ptr<Graph<T>>> spanningTrees;
 
-    // Solution:
+    // Handle edge case: Empty graph
+    if (getAllVertices().empty()) return spanningTrees;
+
+    // Handle edge case: Single vertex
+    if (getAllVertices().size() == 1) {
+        auto singleTree = make_shared<Graph<T>>(false, isWeighted());
+        singleTree->addVertex(getAllVertices()[0]->getData());
+        spanningTrees.push_back(singleTree);
+        return spanningTrees;
+    }
+
+    // Find connected components using BFS/DFS
+    unordered_map<shared_ptr<Vertex<T>>, bool> visited;
+    for (auto vertex : getAllVertices()) {
+        visited[vertex] = false;
+    }
+
+    auto dfs = [&](shared_ptr<Vertex<T>> v, shared_ptr<Graph<T>> component) {
+        visited[v] = true;
+        component->addVertex(v->getData());
+        for (auto edge : v->getEdges()) {
+            auto neighbor = edge->getDestination();
+            if (!visited[neighbor]) {
+                component->addEdge(v->getData(), neighbor->getData(), edge->getWeight());
+                dfs(neighbor, component);
+            }
+        }
+    };
+
+    for (auto vertex : getAllVertices()) {
+        if (!visited[vertex]) {
+            auto component = make_shared<Graph<T>>(isDirected(), isWeighted());
+            dfs(vertex, component);
+
+            // Find MST of the component (or spanning tree)
+            auto mst = component->minimumSpanningTree();
+            if (mst) spanningTrees.push_back(mst);
+        }
+    }
+
+    return spanningTrees;
 }
+
 
 // BONUS TASK 2 FOR 5 MARKS
 

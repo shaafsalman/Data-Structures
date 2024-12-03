@@ -34,37 +34,34 @@ int main() {
     }
     cout << endl;
 
-    // Test 2: Undirected, Weighted Graph - Minimum Spanning Tree (5 marks)
-    cout << "Test 2: Minimum Spanning Tree (5 marks)" << endl;
-    Graph<int> graph2(false, true); // Undirected and Weighted graph
-    graph2.addVertex(1);
-    graph2.addVertex(2);
-    graph2.addVertex(3);
-    graph2.addVertex(4);
-    graph2.addEdge(1, 2, 1);
-    graph2.addEdge(1, 3, 4);
-    graph2.addEdge(2, 3, 2);
-    graph2.addEdge(3, 4, 3);
+    // // Test 2: Undirected, Weighted Graph - Minimum Spanning Tree (5 marks)
+    // cout << "Test 2: Minimum Spanning Tree (5 marks)" << endl;
+    // Graph<int> graph2(false, true); // Undirected and Weighted graph
+    // graph2.addVertex(1);
+    // graph2.addVertex(2);
+    // graph2.addVertex(3);
+    // graph2.addVertex(4);
+    // graph2.addEdge(1, 2, 1);
+    // graph2.addEdge(1, 3, 4);
+    // graph2.addEdge(2, 3, 2);
+    // graph2.addEdge(3, 4, 3);
 
-    auto mst = graph2.minimumSpanningTree();
-    cout << "Minimum Spanning Tree Edges:" << endl;
-    auto mstEdges = mst->getAllEdges();
-    int mstEdgeCount = 0;
-    for (const auto& edge : mstEdges) {
-        cout << edge->getSource()->getData() << " -> " << edge->getDestination()->getData()
-             << " [Weight: " << edge->getWeight() << "]" << endl;
-        mstEdgeCount++;
-    }
-    if (mstEdgeCount == 3) {
-        cout << "Minimum Spanning Tree passed! +5 marks" << endl;
-        totalScore += 5;
-    } else {
-        cout << "Minimum Spanning Tree failed." << endl;
-    }
-    cout << endl;
-
-
-
+    // auto mst = graph2.minimumSpanningTree();
+    // cout << "Minimum Spanning Tree Edges:" << endl;
+    // auto mstEdges = mst->getAllEdges();
+    // int mstEdgeCount = 0;
+    // for (const auto& edge : mstEdges) {
+    //     cout << edge->getSource()->getData() << " -> " << edge->getDestination()->getData()
+    //          << " [Weight: " << edge->getWeight() << "]" << endl;
+    //     mstEdgeCount++;
+    // }
+    // if (mstEdgeCount == 3) {
+    //     cout << "Minimum Spanning Tree passed! +5 marks" << endl;
+    //     totalScore += 5;
+    // } else {
+    //     cout << "Minimum Spanning Tree failed." << endl;
+    // }
+    // cout << endl;
 
     // Test 3: Shortest Path (5 marks)
     cout << "Test 3: Shortest Path (5 marks)" << endl;

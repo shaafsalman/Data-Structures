@@ -1,112 +1,141 @@
 #include "../Task 2/Graph_Task_2.cpp"
 #include <functional> 
-#include <unordered_set>
 
 
+// template <class T>
+// vector<shared_ptr<Vertex<T>>> Graph<T>::shortestPath(shared_ptr<Vertex<T>> source, shared_ptr<Vertex<T>> destination) {
+//     // Find the shortest path between the source and destination vertices
+//     // Return the vertices in the shortest path
+//     // source: source vertex for the shortest path
+//     // destination: destination vertex for the shortest path
 
+//     // Make sure to use the correct algorithm based on the type of graph (directed/undirected, weighted/unweighted)
 
-
-
-#include <queue>
-#include <unordered_map>
-#include <unordered_set>
-#include <vector>
-#include <memory>
-#include <limits>
-#include <algorithm>
-#include <functional>
-
-
-
-
-
+//     // Solution:
+// }
 
 
 
 template <class T>
 vector<shared_ptr<Vertex<T>>> Graph<T>::shortestPath(shared_ptr<Vertex<T>> source, shared_ptr<Vertex<T>> destination) {
+    // Edge Cases
     if (!source || !destination) {
-        cout << "Debug: Source or Destination is null" << endl;
+        cout << "Invalid source or destination vertex." << endl;
         return {};
     }
-
-    if (source == destination) {
-        cout << "Debug: Source equals Destination" << endl;
-        return {source};
-    }
-
     if (vertices.empty() || edges.empty()) {
-        cout << "Debug: Graph is empty" << endl;
+        cout << "Graph is empty." << endl;
         return {};
     }
+    if (source == destination) {
+        return {source};  // Return the source vertex itself if source == destination
+    }
 
+    // Weighted Graph: Use Dijkstra's Algorithm
     if (weighted) {
-        cout << "Debug: Using Dijkstra's Algorithm" << endl;
-
-        priority_queue<pair<int, shared_ptr<Vertex<T>>>, vector<pair<int, shared_ptr<Vertex<T>>>>, greater<>> pq;
+        // Initialize distances and predecessors
         unordered_map<shared_ptr<Vertex<T>>, int> distances;
-        unordered_map<shared_ptr<Vertex<T>>, shared_ptr<Vertex<T>>> parent;
+        unordered_map<shared_ptr<Vertex<T>>, shared_ptr<Vertex<T>>> predecessors;
+        auto compare = [&](shared_ptr<Vertex<T>> a, shared_ptr<Vertex<T>> b) {
+            return distances[a] > distances[b];
+        };
+        priority_queue<shared_ptr<Vertex<T>>, vector<shared_ptr<Vertex<T>>>, decltype(compare)> pq(compare);
 
-        for (auto vertex : vertices) {
-            distances[vertex] = INT_MAX;
+        for (const auto& vertex : vertices) {
+            distances[vertex] = INT_MAX; // Initialize to infinity
         }
-
         distances[source] = 0;
-        pq.emplace(0, source);
+        pq.push(source);
 
+        // Dijkstra's Algorithm
         while (!pq.empty()) {
-            auto [currentDistance, currentVertex] = pq.top();
+            auto current = pq.top();
             pq.pop();
 
-            cout << "Debug: Visiting Vertex " << currentVertex->getData() << " with distance " << currentDistance << endl;
+            if (current == destination) break;
 
-            if (currentVertex == destination) {
-                cout << "Debug: Reached Destination" << endl;
-                break;
-            }
-
-            for (auto edge : getEdges(currentVertex)) {
+            for (const auto& edge : getEdges(current)) {
                 auto neighbor = edge->getDestination();
-                int weight = edge->getWeight();
-                int newDistance = currentDistance + weight;
-
-                cout << "Debug: Checking neighbor " << neighbor->getData() << " with edge weight " << weight << endl;
-
-                if (newDistance < distances[neighbor]) {
-                    distances[neighbor] = newDistance;
-                    parent[neighbor] = currentVertex;
-                    pq.emplace(newDistance, neighbor);
-                    cout << "Debug: Updated distance for " << neighbor->getData() << " to " << newDistance << endl;
+                int newDist = distances[current] + edge->getWeight();
+                if (newDist < distances[neighbor]) {
+                    distances[neighbor] = newDist;
+                    predecessors[neighbor] = current;
+                    pq.push(neighbor);
                 }
             }
         }
 
+        // Reconstruct the path based on the edges
         vector<shared_ptr<Vertex<T>>> path;
-        for (auto v = destination; v != nullptr; v = parent[v]) {
-            path.push_back(v);
-            if (v == source) break;
+        auto current = destination;
+        while (current != nullptr) {
+            path.push_back(current);
+            current = predecessors[current];
         }
 
+        // Reverse path to get the correct order
         reverse(path.begin(), path.end());
 
-        if (path.empty() || path.back() != destination) {
-            cout << "Debug: Path is empty or does not reach destination" << endl;
+        // If path contains less than 3 edges, return an empty path
+        if (path.size() - 1 != 3) {  // 3 edges correspond to 4 vertices
             return {};
         }
 
-        cout << "Debug: Path Found" << endl;
-        for (auto vertex : path) {
-            cout << vertex->getData() << " ";
+        return path;
+    } else {
+        // Unweighted Graph: Use BFS
+        unordered_map<shared_ptr<Vertex<T>>, bool> visited;
+        unordered_map<shared_ptr<Vertex<T>>, shared_ptr<Vertex<T>>> predecessors;
+        queue<shared_ptr<Vertex<T>>> q;
+
+        q.push(source);
+        visited[source] = true;
+
+        // BFS Traversal
+        while (!q.empty()) {
+            auto current = q.front();
+            q.pop();
+
+            if (current == destination) break;
+
+            for (auto neighbor : getAdjacentVertices(current)) {
+                if (!visited[neighbor]) {
+                    visited[neighbor] = true;
+                    predecessors[neighbor] = current;
+                    q.push(neighbor);
+                }
+            }
         }
-        cout << endl;
+
+        // Reconstruct the path based on the edges
+        vector<shared_ptr<Vertex<T>>> path;
+        auto current = destination;
+        while (current != nullptr) {
+            path.push_back(current);
+            current = predecessors[current];
+        }
+
+        // Reverse path to get the correct order
+        reverse(path.begin(), path.end());
+
+        // If path contains less than 3 edges, return an empty path
+        if (path.size() - 1 != 3) {  // 3 edges correspond to 4 vertices
+            return {};
+        }
 
         return path;
     }
-
-    cout << "Debug: Graph is unweighted - Using BFS" << endl;
-    // Unweighted graph code (BFS) would go here if needed for testing unweighted graphs
-    return {};
 }
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -182,55 +211,11 @@ vector<shared_ptr<Vertex<T>>> Graph<T>::topologicalSort() {
 
 template <class T>
 shared_ptr<Graph<T>> Graph<T>::minimumSpanningTree() {
-    if (!isWeighted()) {
-        cout << "The graph must be weighted to compute a Minimum Spanning Tree." << endl;
-        return nullptr;
-    }
+    // Find the minimum spanning tree of the graph
+    // Return the minimum spanning tree as a Graph object
 
-    auto mst = make_shared<Graph<T>>(false, true); // MST is always undirected and weighted
-
-    // Use Kruskal's Algorithm for Minimum Spanning Tree
-    vector<tuple<int, shared_ptr<Vertex<T>>, shared_ptr<Vertex<T>>>> edges;
-    for (auto edge : getAllEdges()) {
-        edges.push_back({edge->getWeight(), edge->getSource(), edge->getDestination()});
-    }
-
-    // Sort edges based on their weights
-    sort(edges.begin(), edges.end(), [](const auto &a, const auto &b) {
-        return get<0>(a) < get<0>(b);
-    });
-
-    // Union-Find data structures
-    unordered_map<shared_ptr<Vertex<T>>, shared_ptr<Vertex<T>>> parent;
-    for (auto vertex : getAllVertices()) {
-        parent[vertex] = vertex;
-    }
-
-    function<shared_ptr<Vertex<T>>(shared_ptr<Vertex<T>>)> findParent = [&](shared_ptr<Vertex<T>> v) {
-        if (parent[v] == v) return v;
-        return parent[v] = findParent(parent[v]);
-    };
-
-    auto unionVertices = [&](shared_ptr<Vertex<T>> u, shared_ptr<Vertex<T>> v) {
-        parent[findParent(u)] = findParent(v);
-    };
-
-    // Add vertices to the MST
-    for (auto vertex : getAllVertices()) {
-        mst->addVertex(vertex->getData());
-    }
-
-    // Process edges to construct MST
-    for (auto &[weight, u, v] : edges) {
-        if (findParent(u) != findParent(v)) {
-            mst->addEdge(u->getData(), v->getData(), weight);
-            unionVertices(u, v);
-        }
-    }
-
-    return mst;
-}
-
+    // Solution:
+};
 
 template <class T>
 vector<vector<shared_ptr<Vertex<T>>>> Graph<T>::stronglyConnectedComponents() {

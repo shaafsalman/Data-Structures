@@ -182,55 +182,11 @@ vector<shared_ptr<Vertex<T>>> Graph<T>::topologicalSort() {
 
 template <class T>
 shared_ptr<Graph<T>> Graph<T>::minimumSpanningTree() {
-    if (!isWeighted()) {
-        cout << "The graph must be weighted to compute a Minimum Spanning Tree." << endl;
-        return nullptr;
-    }
+    // Find the minimum spanning tree of the graph
+    // Return the minimum spanning tree as a Graph object
 
-    auto mst = make_shared<Graph<T>>(false, true); // MST is always undirected and weighted
-
-    // Use Kruskal's Algorithm for Minimum Spanning Tree
-    vector<tuple<int, shared_ptr<Vertex<T>>, shared_ptr<Vertex<T>>>> edges;
-    for (auto edge : getAllEdges()) {
-        edges.push_back({edge->getWeight(), edge->getSource(), edge->getDestination()});
-    }
-
-    // Sort edges based on their weights
-    sort(edges.begin(), edges.end(), [](const auto &a, const auto &b) {
-        return get<0>(a) < get<0>(b);
-    });
-
-    // Union-Find data structures
-    unordered_map<shared_ptr<Vertex<T>>, shared_ptr<Vertex<T>>> parent;
-    for (auto vertex : getAllVertices()) {
-        parent[vertex] = vertex;
-    }
-
-    function<shared_ptr<Vertex<T>>(shared_ptr<Vertex<T>>)> findParent = [&](shared_ptr<Vertex<T>> v) {
-        if (parent[v] == v) return v;
-        return parent[v] = findParent(parent[v]);
-    };
-
-    auto unionVertices = [&](shared_ptr<Vertex<T>> u, shared_ptr<Vertex<T>> v) {
-        parent[findParent(u)] = findParent(v);
-    };
-
-    // Add vertices to the MST
-    for (auto vertex : getAllVertices()) {
-        mst->addVertex(vertex->getData());
-    }
-
-    // Process edges to construct MST
-    for (auto &[weight, u, v] : edges) {
-        if (findParent(u) != findParent(v)) {
-            mst->addEdge(u->getData(), v->getData(), weight);
-            unionVertices(u, v);
-        }
-    }
-
-    return mst;
-}
-
+    // Solution:
+};
 
 template <class T>
 vector<vector<shared_ptr<Vertex<T>>>> Graph<T>::stronglyConnectedComponents() {

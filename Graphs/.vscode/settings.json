@@ -66,6 +66,12 @@
     "queue": "cpp",
     "cwchar": "cpp",
     "stack": "cpp",
-    "type_traits": "cpp"
+    "type_traits": "cpp",
+    "xutility": "cpp",
+    "list": "cpp",
+    "initializer_list": "cpp",
+    "xhash": "cpp",
+    "xtree": "cpp",
+    "fstream": "cpp"
   }
 }
