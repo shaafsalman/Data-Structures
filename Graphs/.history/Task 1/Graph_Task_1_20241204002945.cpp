@@ -112,19 +112,19 @@ void Graph<T>::removeVertex(T data) {
 
 template <class T>
 void Graph<T>::removeEdge(T source, T destination) {
-    // Ensure both vertices exist in the graph
+    // Debug: Check if the source and destination vertices exist
     auto srcVertex = getVertex(source);
     auto destVertex = getVertex(destination);
 
     if (!srcVertex || !destVertex) {
         cout << "Error: Source or destination vertex not found!" << endl;
-        return; // Return if either vertex is not found
+        return;  // Return if vertices are not found
     }
 
     // Debug: Print the vertices and edge before removal
     cout << "Removing edge between " << source << " and " << destination << endl;
 
-    // Remove the edge in both directions (for undirected graphs)
+    // Remove the edge in both directions for undirected graph
     edges.erase(
         remove_if(edges.begin(), edges.end(), [srcVertex, destVertex](shared_ptr<Edge<T>> edge) {
             return (edge->getSource() == srcVertex && edge->getDestination() == destVertex) ||
@@ -136,11 +136,8 @@ void Graph<T>::removeEdge(T source, T destination) {
     // Debug: Verify the adjacency list after edge removal
     cout << "Edge removed successfully. Updating adjacency matrix..." << endl;
 
-    // Ensure the adjacency matrix is updated after the edge removal
     updateAdjacencyMatrix();
 }
-
-
 
 template <class T>
 shared_ptr<Vertex<T>> Graph<T>::getVertex(T data) {
@@ -273,10 +270,14 @@ void Graph<T>::setWeighted(bool weighted) {
 
 }
 
-
 template <class T>
 void Graph<T>::updateAdjacencyMatrix() {
-    int size = vertices.size();
+    // Update the adjacency matrix of the graph
+    // 1 if edge exists, 0 otherwise for undirected graphs
+    // weight of the edge for weighted graphs, 0 otherwise
+
+    // Solution:
+  int size = vertices.size();
     
     // Initialize both matrices with zeros
     adjacencyMatrix.assign(size, vector<int>(size, 0));  // Unweighted matrix
@@ -287,26 +288,25 @@ void Graph<T>::updateAdjacencyMatrix() {
         int srcIdx = find(vertices.begin(), vertices.end(), edge->getSource()) - vertices.begin();
         int destIdx = find(vertices.begin(), vertices.end(), edge->getDestination()) - vertices.begin();
 
+        // If weighted graph, use the edge weight
         if (weighted) {
-            adjacencyMatrix[srcIdx][destIdx] = edge->getWeight();
-            adjacencyMatrixWeighted[srcIdx][destIdx] = edge->getWeight();
+            adjacencyMatrix[srcIdx][destIdx] = edge->getWeight(); // Actual weight in weighted matrix
+            adjacencyMatrixWeighted[srcIdx][destIdx] = edge->getWeight(); // Actual weight in weighted matrix
         } else {
-            adjacencyMatrix[srcIdx][destIdx] = 1;  // Unweighted graphs
+            adjacencyMatrix[srcIdx][destIdx] = 1;  // Presence of edge in adjacency matrix (unweighted)
         }
 
-        // For undirected graphs, ensure symmetry
+        // For undirected graph, we also need to ensure symmetry
         if (!directed) {
             if (weighted) {
-                adjacencyMatrix[destIdx][srcIdx] = edge->getWeight();
-                adjacencyMatrixWeighted[destIdx][srcIdx] = edge->getWeight();
+                adjacencyMatrix[destIdx][srcIdx] = edge->getWeight(); // Symmetry in weighted graph
+                adjacencyMatrixWeighted[destIdx][srcIdx] = edge->getWeight(); // Symmetry in weighted graph
             } else {
-                adjacencyMatrix[destIdx][srcIdx] = 1;
+                adjacencyMatrix[destIdx][srcIdx] = 1;  // Symmetric edge for undirected graph (unweighted)
             }
         }
     }
 }
-
-
 
 template <class T>
 vector<vector<int>> Graph<T>::getAdjacencyMatrix() {

@@ -113,43 +113,62 @@ string Airport::getCountry() {
 
 
 
-
-
+// Helper function to add edges and prevent duplication
+void Airport::addFlightEdge(shared_ptr<Airport> source, shared_ptr<Airport> destination, int cost, int distance, bool isDeparture) {
+    // Ensure the edge doesn't already exist in the respective graph
+    if (isDeparture) {
+        if (departureFlights_distance->getEdge(source, destination) == nullptr) {
+            departureFlights_distance->addEdge(source, destination, distance);
+        }
+        if (departureFlights_cost->getEdge(source, destination) == nullptr) {
+            departureFlights_cost->addEdge(source, destination, cost);
+        }
+    } else {
+        if (arrivalFlights_distance->getEdge(source, destination) == nullptr) {
+            arrivalFlights_distance->addEdge(source, destination, distance);
+        }
+        if (arrivalFlights_cost->getEdge(source, destination) == nullptr) {
+            arrivalFlights_cost->addEdge(source, destination, cost);
+        }
+    }
+}
 
 void Airport::addDepartureFlight(string flightNumber, shared_ptr<Airport> destination, int cost, int distance, FlightStatus status) {
     // Create a new flight
     auto flight = make_shared<Flight>(flightNumber, shared_from_this(), destination, distance, cost, status);
+    
     // Add to the list of departure flights
     departureFlights.push_back(flight);
-    // Add to departure graphs
-    departureFlights_distance->addEdge(shared_from_this(), destination, distance);
-    departureFlights_cost->addEdge(shared_from_this(), destination, cost);
+
+    // Add edges to the departure graphs if they do not exist
+    addFlightEdge(shared_from_this(), destination, cost, distance, true);
 }
 
 void Airport::addDepartureFlight(shared_ptr<Flight> flight) {
     // Add to the list of departure flights
     departureFlights.push_back(flight);
-    // Add to departure graphs
-    departureFlights_distance->addEdge(shared_from_this(), flight->getDestinationAirport(), flight->getDistance());
-    departureFlights_cost->addEdge(shared_from_this(), flight->getDestinationAirport(), flight->getCost());
+    
+    // Add edges to the departure graphs if they do not exist
+    addFlightEdge(shared_from_this(), flight->getDestinationAirport(), flight->getCost(), flight->getDistance(), true);
 }
 
 void Airport::addArrivalFlight(string flightNumber, shared_ptr<Airport> source, int cost, int distance, FlightStatus status) {
     // Create a new flight
     auto flight = make_shared<Flight>(flightNumber, source, shared_from_this(), distance, cost, status);
+    
     // Add to the list of arrival flights
     arrivalFlights.push_back(flight);
-    // Add to arrival graphs
-    arrivalFlights_distance->addEdge(source, shared_from_this(), distance);
-    arrivalFlights_cost->addEdge(source, shared_from_this(), cost);
+
+    // Add edges to the arrival graphs if they do not exist
+    addFlightEdge(source, shared_from_this(), cost, distance, false);
 }
 
 void Airport::addArrivalFlight(shared_ptr<Flight> flight) {
     // Add to the list of arrival flights
     arrivalFlights.push_back(flight);
-    // Add to arrival graphs
-    arrivalFlights_distance->addEdge(flight->getDepartureAirport(), shared_from_this(), flight->getDistance());
-    arrivalFlights_cost->addEdge(flight->getDepartureAirport(), shared_from_this(), flight->getCost());
+
+    // Add edges to the arrival graphs if they do not exist
+    addFlightEdge(flight->getDepartureAirport(), shared_from_this(), flight->getCost(), flight->getDistance(), false);
 }
 
 

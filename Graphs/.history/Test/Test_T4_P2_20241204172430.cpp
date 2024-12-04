@@ -81,7 +81,6 @@ int main() {
         FlightNetwork network;
         shared_ptr<Flight> flight1 = make_shared<Flight>("AA100", airport1, airport2, 4000, 300, FlightStatus::SCHEDULED);
         network.addFlight(flight1);
-        network.hasFlight("AA100");
         assert(network.hasFlight("AA100"));
         totalMarks += 2;
         std::cout << "Test Case 6 Passed: Add flights to network" << std::endl;

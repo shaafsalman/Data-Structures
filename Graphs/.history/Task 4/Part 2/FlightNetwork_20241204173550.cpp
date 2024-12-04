@@ -282,9 +282,9 @@ void FlightNetwork::addFlight(shared_ptr<Flight> flight) {
         addAirport(destinationAirport);  // Adds only if not present
     }
 
-    // Add flight to the airports and graphs
-    departureAirport->addDepartureFlight(flight);
-    destinationAirport->addArrivalFlight(flight);
+    // // Add flight to the airports and graphs
+    // departureAirport->addDepartureFlight(flight);
+    // destinationAirport->addArrivalFlight(flight);
 
     cout << "Adding flight " << flight->getFlightNumber() 
          << " to graph: from " << departureAirport->getName() 

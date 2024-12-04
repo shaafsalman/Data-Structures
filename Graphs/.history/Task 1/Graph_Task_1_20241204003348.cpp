@@ -109,7 +109,6 @@ void Graph<T>::removeVertex(T data) {
     updateAdjacencyMatrix();
 
 }
-
 template <class T>
 void Graph<T>::removeEdge(T source, T destination) {
     // Ensure both vertices exist in the graph
@@ -136,10 +135,11 @@ void Graph<T>::removeEdge(T source, T destination) {
     // Debug: Verify the adjacency list after edge removal
     cout << "Edge removed successfully. Updating adjacency matrix..." << endl;
 
-    // Ensure the adjacency matrix is updated after the edge removal
+    // Force update of the adjacency matrix/list
     updateAdjacencyMatrix();
+    srcVertex->clearAdjacentVertices();  // Clear cached adjacency list
+    destVertex->clearAdjacentVertices(); // Clear cached adjacency list
 }
-
 
 
 template <class T>

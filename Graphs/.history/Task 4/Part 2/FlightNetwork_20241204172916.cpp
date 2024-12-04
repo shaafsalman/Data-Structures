@@ -296,20 +296,14 @@ void FlightNetwork::addFlight(shared_ptr<Flight> flight) {
 }
 
 // Check if Airport Exists
-bool FlightNetwork::hasAirport(string name) {
-    std::cout << "Checking for airport: " << name << std::endl;
+bool FlightNetwork::hasAirport(const string& name) {
     for (const auto& airport : Airports) {
-        std::cout << "Comparing with: " << airport->getName() << std::endl;
-        if (airport->getName() == name) {
-            std::cout << "Airport found: " << name << std::endl;
+        if (airport->getName() == name) { // Compare the name, not the pointer
             return true;
         }
     }
-    std::cout << "Airport not found: " << name << std::endl;
     return false;
 }
-
-
 
 
 
@@ -317,7 +311,6 @@ bool FlightNetwork::hasAirport(string name) {
 bool FlightNetwork::hasFlight(string flightNumber) {
     std::cout << "Checking for flight: " << flightNumber << std::endl;
     for (const auto& airport : Airports) {
-        std::cout << "Checking flights at airport: " << airport->getName() << std::endl;
         if (airport->hasFlight(flightNumber)) {
             std::cout << "Flight found at airport: " << airport->getName() << std::endl;
             return true;
@@ -326,7 +319,6 @@ bool FlightNetwork::hasFlight(string flightNumber) {
     std::cout << "Flight not found: " << flightNumber << std::endl;
     return false;
 }
-
 
 
 // Get Airport by Name

@@ -231,107 +231,69 @@ vector<shared_ptr<Flight>> Airport::getAllFlights() {
 }
 
 /************************************** FLIGHTNETWORK CLASS *****************************************/
+FlightNetwork::FlightNetwork()
+    : AirportNetwork_distance(true, true), AirportNetwork_cost(true, true) {}
 
-FlightNetwork::FlightNetwork() 
-    : AirportNetwork_distance(true, true), AirportNetwork_cost(true, true) {
-    std::cout << "FlightNetwork instance created." << std::endl;
-}
-// Add Airport
+
 void FlightNetwork::addAirport(shared_ptr<Airport> airport) {
-    std::cout << "Current airports in network: ";
-    for (const auto& a : Airports) {
-        std::cout << a->getName() << " ";
-    }
-    std::cout << std::endl;
+    // Correctly add the airport
 
-    if (!hasAirport(airport->getName())) {
-        std::cout << "Adding airport: " << airport->getName() << std::endl;
+    // Solution:
+     if (!hasAirport(airport->getName())) {
         Airports.push_back(airport);
         AirportNetwork_distance.addVertex(airport);
         AirportNetwork_cost.addVertex(airport);
-    } else {
-        std::cout << "Airport " << airport->getName() << " already exists." << std::endl;
     }
-
-    std::cout << "Airports after addition: ";
-    for (const auto& a : Airports) {
-        std::cout << a->getName() << " ";
-    }
-    std::cout << std::endl;
 }
 
-
-
-
-// Add Flight
 void FlightNetwork::addFlight(shared_ptr<Flight> flight) {
+    // Correctly add the flight to the correct airports
+    // Make sure to check for Airport existence
+
+    // Solution:
     auto departureAirport = flight->getDepartureAirport();
     auto destinationAirport = flight->getDestinationAirport();
 
-    cout << "Attempting to add flight " << flight->getFlightNumber() 
-         << " from " << departureAirport->getName() 
-         << " to " << destinationAirport->getName() << endl;
-
-    // Ensure departure and destination airports are in the network
-    if (!hasAirport(departureAirport->getName())) {
-        cout << "Adding missing departure airport: " << departureAirport->getName() << endl;
-        addAirport(departureAirport);  // Adds only if not present
-    }
-    if (!hasAirport(destinationAirport->getName())) {
-        cout << "Adding missing destination airport: " << destinationAirport->getName() << endl;
-        addAirport(destinationAirport);  // Adds only if not present
+    if (!hasAirport(departureAirport->getName()) || !hasAirport(destinationAirport->getName())) {
+        return; // Do not add the flight if the airports are not in the network
     }
 
-    // Add flight to the airports and graphs
     departureAirport->addDepartureFlight(flight);
     destinationAirport->addArrivalFlight(flight);
 
-    cout << "Adding flight " << flight->getFlightNumber() 
-         << " to graph: from " << departureAirport->getName() 
-         << " to " << destinationAirport->getName() << endl;
-
-    // Update graphs with new flight data
     AirportNetwork_distance.addEdge(departureAirport, destinationAirport, flight->getDistance());
     AirportNetwork_cost.addEdge(departureAirport, destinationAirport, flight->getCost());
 }
 
-// Check if Airport Exists
 bool FlightNetwork::hasAirport(string name) {
-    std::cout << "Checking for airport: " << name << std::endl;
-    for (const auto& airport : Airports) {
-        std::cout << "Comparing with: " << airport->getName() << std::endl;
+    // Check if the airport exists in the network
+
+    // Solution:
+    for (auto &airport : Airports) {
         if (airport->getName() == name) {
-            std::cout << "Airport found: " << name << std::endl;
             return true;
         }
     }
-    std::cout << "Airport not found: " << name << std::endl;
     return false;
 }
 
-
-
-
-
-// Check if Flight Exists
 bool FlightNetwork::hasFlight(string flightNumber) {
-    std::cout << "Checking for flight: " << flightNumber << std::endl;
-    for (const auto& airport : Airports) {
-        std::cout << "Checking flights at airport: " << airport->getName() << std::endl;
+    // Check if the flight exists in the network
+
+    // Solution:
+    for (auto &airport : Airports) {
         if (airport->hasFlight(flightNumber)) {
-            std::cout << "Flight found at airport: " << airport->getName() << std::endl;
             return true;
         }
     }
-    std::cout << "Flight not found: " << flightNumber << std::endl;
     return false;
 }
 
-
-
-// Get Airport by Name
 shared_ptr<Airport> FlightNetwork::getAirport(string name) {
-    for (const auto& airport : Airports) {
+    // Get the airport with the given name
+
+    // Solution:
+      for (auto &airport : Airports) {
         if (airport->getName() == name) {
             return airport;
         }
@@ -339,176 +301,140 @@ shared_ptr<Airport> FlightNetwork::getAirport(string name) {
     return nullptr;
 }
 
-
-
-
-
-
-
-
-
-
-
-// Get Flight by Flight Number
 shared_ptr<Flight> FlightNetwork::getFlight(string flightNumber) {
-    for (const auto& airport : Airports) {
+    // Get the flight with the given flightNumber
+
+    // Solution:
+    for (auto &airport : Airports) {
         auto flight = airport->getFlight(flightNumber);
-        if (flight) {
+        if (flight != nullptr) {
             return flight;
         }
     }
     return nullptr;
 }
 
-// Get Shortest Path
 vector<shared_ptr<Airport>> FlightNetwork::getShortestPath(shared_ptr<Airport> source, shared_ptr<Airport> destination) {
-    auto path = AirportNetwork_distance.shortestPath(
-        make_shared<Vertex<shared_ptr<Airport>>>(source),
-        make_shared<Vertex<shared_ptr<Airport>>>(destination)
-    );
+    // Get the shortest path from source to destination based on the given criteria
 
+    // Solution:
+     auto path = AirportNetwork_distance.shortestPath(source, destination);
     vector<shared_ptr<Airport>> result;
-    for (const auto& vertex : path) {
+    for (auto &vertex : path) {
         result.push_back(vertex->getData());
     }
     return result;
 }
 
-// Get Cheapest Path
 vector<shared_ptr<Airport>> FlightNetwork::getCheapestPath(shared_ptr<Airport> source, shared_ptr<Airport> destination) {
-    auto path = AirportNetwork_cost.shortestPath(
-        make_shared<Vertex<shared_ptr<Airport>>>(source),
-        make_shared<Vertex<shared_ptr<Airport>>>(destination)
-    );
+    // Get the cheapest path from source to destination based on the given criteria
 
+    // Solution:
+     auto path = AirportNetwork_cost.shortestPath(source, destination);
     vector<shared_ptr<Airport>> result;
-    for (const auto& vertex : path) {
+    for (auto &vertex : path) {
         result.push_back(vertex->getData());
     }
     return result;
 }
 
-// Get Flight Plan
 vector<shared_ptr<Airport>> FlightNetwork::getFlightPlan(shared_ptr<Airport> source, shared_ptr<Airport> destination) {
-    auto shortest = getShortestPath(source, destination);
+    // Get the flight plan from source to destination based on the given criteria
+    // for example:
+    // TOTAL PATHS (P1 for PATH 1): {P1, P2, P3, P4, P5}
+    // SHORTEST PATH (SHORTEST FIRST) : {P2, P3, P4, P5, P1}
+    // CHEAPEST PATH (CHEAPEST FIRST) : {P1, P4, P5, P3, P2}
+    // FLIGHT PLAN = P4
+    
+    // Solution:
+      auto shortest = getShortestPath(source, destination);
     auto cheapest = getCheapestPath(source, destination);
 
     if (shortest == cheapest) {
         return shortest;
     }
 
-    // Use a dummy getEdgeWeight method as the original class lacks this feature
-    auto sourceVertex = make_shared<Vertex<shared_ptr<Airport>>>(source);
-    auto destinationVertex = make_shared<Vertex<shared_ptr<Airport>>>(destination);
-    int shortestDistance = AirportNetwork_distance.getEdge(sourceVertex->getData(), destinationVertex->getData())->getWeight();
-    int cheapestCost = AirportNetwork_cost.getEdge(sourceVertex->getData(), destinationVertex->getData())->getWeight();
+    // Select the flight plan based on the least percentage increase
+    double shortestDistance = AirportNetwork_distance.getEdgeWeight(source, destination);
+    double cheapestCost = AirportNetwork_cost.getEdgeWeight(source, destination);
 
-    double percentageIncreaseShortest = (shortestDistance / (double)cheapestCost - 1) * 100;
-    double percentageIncreaseCheapest = (cheapestCost / (double)shortestDistance - 1) * 100;
+    double percentageIncreaseShortest = (shortestDistance / cheapestCost - 1) * 100;
+    double percentageIncreaseCheapest = (cheapestCost / shortestDistance - 1) * 100;
 
     return percentageIncreaseShortest < percentageIncreaseCheapest ? shortest : cheapest;
 }
 
-// Get All Flights
 vector<shared_ptr<Flight>> FlightNetwork::getAllFlights() {
-    unordered_set<shared_ptr<Flight>> uniqueFlights;
-    for (const auto& airport : Airports) {
-        for (const auto& flight : airport->getAllFlights()) {
+    // Get all flights in the network - No duplicates
+
+    // Solution:
+ unordered_set<shared_ptr<Flight>> uniqueFlights;
+    for (auto &airport : Airports) {
+        for (auto &flight : airport->getAllFlights()) {
             uniqueFlights.insert(flight);
         }
     }
     return vector<shared_ptr<Flight>>(uniqueFlights.begin(), uniqueFlights.end());
 }
 
-// Get All Airports
 vector<shared_ptr<Airport>> FlightNetwork::getAllAirports() {
-    return Airports;
+    // Get all airports in the network
+
+    // Solution:
+        return Airports;
+
 }
 
-// Get Busiest Airport
 shared_ptr<Airport> FlightNetwork::getBusiestAirport() {
-    shared_ptr<Airport> busiest = nullptr;
-    int maxFlights = 0;
+    // Get the busiest airport in the network
 
-    for (const auto& airport : Airports) {
+    // Solution:
+     shared_ptr<Airport> busiest = nullptr;
+    int maxFlights = 0;
+    for (auto &airport : Airports) {
         int totalFlights = airport->getAllFlights().size();
         if (totalFlights > maxFlights) {
             maxFlights = totalFlights;
             busiest = airport;
         }
     }
-
     return busiest;
 }
 
-// Get Lamest Airport
 shared_ptr<Airport> FlightNetwork::getLamestAirport() {
-    shared_ptr<Airport> lamest = nullptr;
-    int minFlights = INT_MAX;
+    // Get the lameset airport in the network
 
-    for (const auto& airport : Airports) {
+    // Solution:
+     shared_ptr<Airport> lamest = nullptr;
+    int minFlights = INT_MAX;
+    for (auto &airport : Airports) {
         int totalFlights = airport->getAllFlights().size();
         if (totalFlights < minFlights) {
             minFlights = totalFlights;
             lamest = airport;
         }
     }
-
     return lamest;
 }
 
-
-// Optimize Graph
 shared_ptr<Graph<shared_ptr<Airport>>> FlightNetwork::OptimizedGraph(bool distance) {
-    return distance ? make_shared<Graph<shared_ptr<Airport>>>(AirportNetwork_distance)
-                    : make_shared<Graph<shared_ptr<Airport>>>(AirportNetwork_cost);
+    // Optimize the graph.
+    // Return the optimized graph
+
+    // Solution:
 }
 
-// Alternate Route for a Flight
 vector<shared_ptr<Airport>> FlightNetwork::alternateRouteForFlight(shared_ptr<Flight> flight) {
-    auto source = flight->getDepartureAirport();
-    auto destination = flight->getDestinationAirport();
-
-    auto shortest = getShortestPath(source, destination);
-    auto cheapest = getCheapestPath(source, destination);
-
-    if (shortest == cheapest) {
-        return shortest;
-    }
-
-    double originalDistance = flight->getDistance();
-    double originalCost = flight->getCost();
-
-    int newDistance = AirportNetwork_distance.getEdge(
-        make_shared<Vertex<shared_ptr<Airport>>>(source)->getData(),
-        make_shared<Vertex<shared_ptr<Airport>>>(destination)->getData()
-    )->getWeight();
-
-    int newCost = AirportNetwork_cost.getEdge(
-        make_shared<Vertex<shared_ptr<Airport>>>(source)->getData(),
-        make_shared<Vertex<shared_ptr<Airport>>>(destination)->getData()
-    )->getWeight();
-
-    double percentageIncrease = ((newDistance - originalDistance) / originalDistance * 100) +
-                                ((newCost - originalCost) / originalCost * 100);
-
-    return percentageIncrease < 0 ? shortest : cheapest;
+    // Imagine that the flight can not take the direct route due to some reason
+    // Find alternate routes for the flight
+    // if cheapest and shortest route are the same then return it otherwise return the one with the least % increase.
+    // FORMULA = [(new_distance - old_distance) / old_distance * 100] + [(new_cost - old_cost) / old_cost * 100]
+    // Solution:
 }
 
-// Airports Reachable
 vector<shared_ptr<Airport>> FlightNetwork::AirportsReachable(shared_ptr<Airport> airport) {
-    auto connectedComponents = AirportNetwork_distance.connectedComponents();
+    // Get all the airports reachable from the given airport
+    // Return a vector of vectors where each vector contains the airports reachable from the given airport
 
-    vector<shared_ptr<Airport>> reachableAirports;
-    for (const auto& component : connectedComponents) {
-        for (const auto& vertex : component) {
-            if (vertex->getData() == airport) {
-                for (const auto& reachable : component) {
-                    reachableAirports.push_back(reachable->getData());
-                }
-                return reachableAirports;
-            }
-        }
-    }
-    return reachableAirports;
+    // Solution:
 }

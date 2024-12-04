@@ -11,7 +11,11 @@ Flight::Flight(string flightNumber, shared_ptr<Airport> departureAirport, shared
       destinationAirport(destinationAirport), 
       distance(distance), 
       cost(cost), 
-      status(status) {}
+      status(status) {
+
+
+        
+      }
 
 shared_ptr<Airport> Flight::getDepartureAirport() {
     // Getter for Departure Airport - The airport from where the flight is taking off
@@ -163,8 +167,12 @@ void Airport::addFlight(shared_ptr<Flight> flight) {
     // The flight is added based on the departure and destination airports
 
     // Solution:
-     addDepartureFlight(flight);
-    addArrivalFlight(flight);
+     if (!hasAirport(flight->getDeparture()->getName()) || 
+        !hasAirport(flight->getDestination()->getName())) {
+        throw logic_error("One or both airports are not part of the network.");
+    }
+
+    flights[flight->getFlightNumber()] = flight;
 }
 
 void Airport::TakeOff(string flightNumber) {
@@ -191,17 +199,8 @@ bool Airport::hasFlight(string flightNumber) {
     // Check if the flight with the given flightNumber exists in the airport
 
     // Solution:
-    for (auto &flight : departureFlights) {
-        if (flight->getFlightNumber() == flightNumber) {
-            return true;
-        }
-    }
-    for (auto &flight : arrivalFlights) {
-        if (flight->getFlightNumber() == flightNumber) {
-            return true;
-        }
-    }
-    return false;
+       return flights.find(flightNumber) != flights.end();
+
 }
 
 shared_ptr<Flight> Airport::getFlight(string flightNumber) {
@@ -233,101 +232,61 @@ vector<shared_ptr<Flight>> Airport::getAllFlights() {
 /************************************** FLIGHTNETWORK CLASS *****************************************/
 
 FlightNetwork::FlightNetwork() 
-    : AirportNetwork_distance(true, true), AirportNetwork_cost(true, true) {
-    std::cout << "FlightNetwork instance created." << std::endl;
-}
+    : AirportNetwork_distance(true, true), AirportNetwork_cost(true, true) {}
+
 // Add Airport
 void FlightNetwork::addAirport(shared_ptr<Airport> airport) {
-    std::cout << "Current airports in network: ";
-    for (const auto& a : Airports) {
-        std::cout << a->getName() << " ";
-    }
-    std::cout << std::endl;
-
     if (!hasAirport(airport->getName())) {
-        std::cout << "Adding airport: " << airport->getName() << std::endl;
         Airports.push_back(airport);
-        AirportNetwork_distance.addVertex(airport);
-        AirportNetwork_cost.addVertex(airport);
-    } else {
-        std::cout << "Airport " << airport->getName() << " already exists." << std::endl;
+        AirportNetwork_distance.addVertex(airport); // Directly pass shared_ptr<Airport>
+        AirportNetwork_cost.addVertex(airport);    // Directly pass shared_ptr<Airport>
     }
-
-    std::cout << "Airports after addition: ";
-    for (const auto& a : Airports) {
-        std::cout << a->getName() << " ";
-    }
-    std::cout << std::endl;
 }
-
-
-
 
 // Add Flight
 void FlightNetwork::addFlight(shared_ptr<Flight> flight) {
     auto departureAirport = flight->getDepartureAirport();
     auto destinationAirport = flight->getDestinationAirport();
 
-    cout << "Attempting to add flight " << flight->getFlightNumber() 
-         << " from " << departureAirport->getName() 
-         << " to " << destinationAirport->getName() << endl;
-
-    // Ensure departure and destination airports are in the network
-    if (!hasAirport(departureAirport->getName())) {
-        cout << "Adding missing departure airport: " << departureAirport->getName() << endl;
-        addAirport(departureAirport);  // Adds only if not present
-    }
-    if (!hasAirport(destinationAirport->getName())) {
-        cout << "Adding missing destination airport: " << destinationAirport->getName() << endl;
-        addAirport(destinationAirport);  // Adds only if not present
+    // Ensure both airports exist in the network
+    if (!hasAirport(departureAirport->getName()) || !hasAirport(destinationAirport->getName())) {
+        std::cout << "Error: One or both airports are not part of the network." << std::endl;
+        return; // Flight cannot be added if airports are not in the network
     }
 
-    // Add flight to the airports and graphs
+    // Add the flight to the respective airports
     departureAirport->addDepartureFlight(flight);
     destinationAirport->addArrivalFlight(flight);
 
-    cout << "Adding flight " << flight->getFlightNumber() 
-         << " to graph: from " << departureAirport->getName() 
-         << " to " << destinationAirport->getName() << endl;
-
-    // Update graphs with new flight data
+    // Add the flight to the graph representations
     AirportNetwork_distance.addEdge(departureAirport, destinationAirport, flight->getDistance());
     AirportNetwork_cost.addEdge(departureAirport, destinationAirport, flight->getCost());
+
+    std::cout << "Flight " << flight->getFlightNumber() << " added between "
+              << departureAirport->getName() << " and " << destinationAirport->getName() << "." << std::endl;
 }
+
+
 
 // Check if Airport Exists
 bool FlightNetwork::hasAirport(string name) {
-    std::cout << "Checking for airport: " << name << std::endl;
     for (const auto& airport : Airports) {
-        std::cout << "Comparing with: " << airport->getName() << std::endl;
         if (airport->getName() == name) {
-            std::cout << "Airport found: " << name << std::endl;
             return true;
         }
     }
-    std::cout << "Airport not found: " << name << std::endl;
     return false;
 }
-
-
-
-
 
 // Check if Flight Exists
 bool FlightNetwork::hasFlight(string flightNumber) {
-    std::cout << "Checking for flight: " << flightNumber << std::endl;
     for (const auto& airport : Airports) {
-        std::cout << "Checking flights at airport: " << airport->getName() << std::endl;
         if (airport->hasFlight(flightNumber)) {
-            std::cout << "Flight found at airport: " << airport->getName() << std::endl;
             return true;
         }
     }
-    std::cout << "Flight not found: " << flightNumber << std::endl;
     return false;
 }
-
-
 
 // Get Airport by Name
 shared_ptr<Airport> FlightNetwork::getAirport(string name) {
@@ -338,16 +297,6 @@ shared_ptr<Airport> FlightNetwork::getAirport(string name) {
     }
     return nullptr;
 }
-
-
-
-
-
-
-
-
-
-
 
 // Get Flight by Flight Number
 shared_ptr<Flight> FlightNetwork::getFlight(string flightNumber) {
@@ -456,7 +405,6 @@ shared_ptr<Airport> FlightNetwork::getLamestAirport() {
 
     return lamest;
 }
-
 
 // Optimize Graph
 shared_ptr<Graph<shared_ptr<Airport>>> FlightNetwork::OptimizedGraph(bool distance) {

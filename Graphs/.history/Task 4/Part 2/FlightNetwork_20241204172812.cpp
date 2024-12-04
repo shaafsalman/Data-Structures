@@ -309,15 +309,10 @@ bool FlightNetwork::hasAirport(string name) {
     return false;
 }
 
-
-
-
-
 // Check if Flight Exists
 bool FlightNetwork::hasFlight(string flightNumber) {
     std::cout << "Checking for flight: " << flightNumber << std::endl;
     for (const auto& airport : Airports) {
-        std::cout << "Checking flights at airport: " << airport->getName() << std::endl;
         if (airport->hasFlight(flightNumber)) {
             std::cout << "Flight found at airport: " << airport->getName() << std::endl;
             return true;
@@ -326,7 +321,6 @@ bool FlightNetwork::hasFlight(string flightNumber) {
     std::cout << "Flight not found: " << flightNumber << std::endl;
     return false;
 }
-
 
 
 // Get Airport by Name

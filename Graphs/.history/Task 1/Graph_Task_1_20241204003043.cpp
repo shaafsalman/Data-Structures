@@ -112,19 +112,19 @@ void Graph<T>::removeVertex(T data) {
 
 template <class T>
 void Graph<T>::removeEdge(T source, T destination) {
-    // Ensure both vertices exist in the graph
+    // Debug: Check if the source and destination vertices exist
     auto srcVertex = getVertex(source);
     auto destVertex = getVertex(destination);
 
     if (!srcVertex || !destVertex) {
         cout << "Error: Source or destination vertex not found!" << endl;
-        return; // Return if either vertex is not found
+        return;  // Return if vertices are not found
     }
 
     // Debug: Print the vertices and edge before removal
     cout << "Removing edge between " << source << " and " << destination << endl;
 
-    // Remove the edge in both directions (for undirected graphs)
+    // Remove the edge in both directions for undirected graph
     edges.erase(
         remove_if(edges.begin(), edges.end(), [srcVertex, destVertex](shared_ptr<Edge<T>> edge) {
             return (edge->getSource() == srcVertex && edge->getDestination() == destVertex) ||
@@ -136,10 +136,8 @@ void Graph<T>::removeEdge(T source, T destination) {
     // Debug: Verify the adjacency list after edge removal
     cout << "Edge removed successfully. Updating adjacency matrix..." << endl;
 
-    // Ensure the adjacency matrix is updated after the edge removal
     updateAdjacencyMatrix();
 }
-
 
 
 template <class T>

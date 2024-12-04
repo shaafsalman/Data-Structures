@@ -76,12 +76,8 @@ int main() {
     // Test Case 6: Add flights to network (2 marks)
     try {
         std::cout << "Test Case 6 ------------------------------------------------------" << std::endl;
-         shared_ptr<Airport> airport1 = make_shared<Airport>("JFK", "New York", "USA");
-         shared_ptr<Airport> airport2 = make_shared<Airport>("LAX", "Los Angeles", "USA");
-        FlightNetwork network;
         shared_ptr<Flight> flight1 = make_shared<Flight>("AA100", airport1, airport2, 4000, 300, FlightStatus::SCHEDULED);
         network.addFlight(flight1);
-        network.hasFlight("AA100");
         assert(network.hasFlight("AA100"));
         totalMarks += 2;
         std::cout << "Test Case 6 Passed: Add flights to network" << std::endl;
@@ -91,7 +87,6 @@ int main() {
 
     // Test Case 7: Check if flight is added (1 mark)
     try {
-        std::cout << "Test Case 7 ------------------------------------------------------" << std::endl;
         FlightNetwork network;
         shared_ptr<Flight> flight1 = make_shared<Flight>("AA100", airport1, airport2, 4000, 300, FlightStatus::SCHEDULED);
         network.addFlight(flight1);

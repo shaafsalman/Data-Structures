@@ -114,46 +114,91 @@ string Airport::getCountry() {
 
 
 
-
-
 void Airport::addDepartureFlight(string flightNumber, shared_ptr<Airport> destination, int cost, int distance, FlightStatus status) {
-    // Create a new flight
+    // Check if the flight already exists in the departure list
+    for (const auto& flight : departureFlights) {
+        if (flight->getFlightNumber() == flightNumber) {
+            std::cout << "Flight " << flightNumber << " already exists from " << getName() << std::endl;
+            return;
+        }
+    }
+
+    // Create a new flight and add to the list of departure flights
     auto flight = make_shared<Flight>(flightNumber, shared_from_this(), destination, distance, cost, status);
-    // Add to the list of departure flights
     departureFlights.push_back(flight);
-    // Add to departure graphs
-    departureFlights_distance->addEdge(shared_from_this(), destination, distance);
-    departureFlights_cost->addEdge(shared_from_this(), destination, cost);
+
+    // Add to departure graphs if not already present (prevent duplicates)
+    if (!departureFlights_distance->hasEdge(shared_from_this(), destination)) {
+        departureFlights_distance->addEdge(shared_from_this(), destination, distance);
+    }
+    if (!departureFlights_cost->hasEdge(shared_from_this(), destination)) {
+        departureFlights_cost->addEdge(shared_from_this(), destination, cost);
+    }
 }
 
 void Airport::addDepartureFlight(shared_ptr<Flight> flight) {
+    // Ensure the flight doesn't already exist in the departure list
+    for (const auto& existingFlight : departureFlights) {
+        if (*existingFlight == *flight) {
+            std::cout << "Flight " << flight->getFlightNumber() << " already exists from " << getName() << std::endl;
+            return;
+        }
+    }
+
     // Add to the list of departure flights
     departureFlights.push_back(flight);
-    // Add to departure graphs
-    departureFlights_distance->addEdge(shared_from_this(), flight->getDestinationAirport(), flight->getDistance());
-    departureFlights_cost->addEdge(shared_from_this(), flight->getDestinationAirport(), flight->getCost());
+
+    // Add to departure graphs (prevent duplicates)
+    if (!departureFlights_distance->hasEdge(shared_from_this(), flight->getDestinationAirport())) {
+        departureFlights_distance->addEdge(shared_from_this(), flight->getDestinationAirport(), flight->getDistance());
+    }
+    if (!departureFlights_cost->hasEdge(shared_from_this(), flight->getDestinationAirport())) {
+        departureFlights_cost->addEdge(shared_from_this(), flight->getDestinationAirport(), flight->getCost());
+    }
 }
 
 void Airport::addArrivalFlight(string flightNumber, shared_ptr<Airport> source, int cost, int distance, FlightStatus status) {
-    // Create a new flight
+    // Check if the flight already exists in the arrival list
+    for (const auto& flight : arrivalFlights) {
+        if (flight->getFlightNumber() == flightNumber) {
+            std::cout << "Flight " << flightNumber << " already exists arriving at " << getName() << std::endl;
+            return;
+        }
+    }
+
+    // Create a new flight and add to the list of arrival flights
     auto flight = make_shared<Flight>(flightNumber, source, shared_from_this(), distance, cost, status);
-    // Add to the list of arrival flights
     arrivalFlights.push_back(flight);
-    // Add to arrival graphs
-    arrivalFlights_distance->addEdge(source, shared_from_this(), distance);
-    arrivalFlights_cost->addEdge(source, shared_from_this(), cost);
+
+    // Add to arrival graphs if not already present (prevent duplicates)
+    if (!arrivalFlights_distance->hasEdge(source, shared_from_this())) {
+        arrivalFlights_distance->addEdge(source, shared_from_this(), distance);
+    }
+    if (!arrivalFlights_cost->hasEdge(source, shared_from_this())) {
+        arrivalFlights_cost->addEdge(source, shared_from_this(), cost);
+    }
 }
 
 void Airport::addArrivalFlight(shared_ptr<Flight> flight) {
+    // Ensure the flight doesn't already exist in the arrival list
+    for (const auto& existingFlight : arrivalFlights) {
+        if (*existingFlight == *flight) {
+            std::cout << "Flight " << flight->getFlightNumber() << " already exists arriving at " << getName() << std::endl;
+            return;
+        }
+    }
+
     // Add to the list of arrival flights
     arrivalFlights.push_back(flight);
-    // Add to arrival graphs
-    arrivalFlights_distance->addEdge(flight->getDepartureAirport(), shared_from_this(), flight->getDistance());
-    arrivalFlights_cost->addEdge(flight->getDepartureAirport(), shared_from_this(), flight->getCost());
+
+    // Add to arrival graphs (prevent duplicates)
+    if (!arrivalFlights_distance->hasEdge(flight->getDepartureAirport(), shared_from_this())) {
+        arrivalFlights_distance->addEdge(flight->getDepartureAirport(), shared_from_this(), flight->getDistance());
+    }
+    if (!arrivalFlights_cost->hasEdge(flight->getDepartureAirport(), shared_from_this())) {
+        arrivalFlights_cost->addEdge(flight->getDepartureAirport(), shared_from_this(), flight->getCost());
+    }
 }
-
-
-
 
 
 
