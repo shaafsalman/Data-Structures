@@ -194,6 +194,9 @@ vector<vector<shared_ptr<Human>>> SocialNetwork::getGroups() {
     return groups;
 }
 
+
+
+
 bool SocialNetwork::canBeConnected(shared_ptr<Human> human1, shared_ptr<Human> human2) {
     if (!human1 || !human2) {
         return false;
@@ -264,6 +267,7 @@ vector<shared_ptr<Human>> SocialNetwork::connectionOrder(shared_ptr<Human> human
     }
 
     vector<shared_ptr<Vertex<shared_ptr<Human>>>> visitedVertices = Network.BFSTraversal(vertex1);
+
     vector<shared_ptr<Vertex<shared_ptr<Human>>>> vertices;
     vector<shared_ptr<Vertex<shared_ptr<Human>>>> parentVertices;
 
@@ -283,6 +287,7 @@ vector<shared_ptr<Human>> SocialNetwork::connectionOrder(shared_ptr<Human> human
             while (vertex != nullptr) {
                 connectionChain.push_back(vertex->getData());
 
+                // Find the parent of the current vertex using simple for loop
                 shared_ptr<Vertex<shared_ptr<Human>>> parent = nullptr;
                 for (size_t i = 0; i < vertices.size(); ++i) {
                     if (vertices[i] == vertex) {
@@ -308,6 +313,7 @@ vector<shared_ptr<Human>> SocialNetwork::connectionOrder(shared_ptr<Human> human
             shared_ptr<Vertex<shared_ptr<Human>>> neighbor = adjacentVertices[i];
             bool alreadyVisited = false;
 
+            // Check if neighbor has already been visited
             for (size_t j = 0; j < vertices.size(); ++j) {
                 if (vertices[j] == neighbor) {
                     alreadyVisited = true;

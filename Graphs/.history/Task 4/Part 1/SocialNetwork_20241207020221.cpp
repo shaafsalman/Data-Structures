@@ -194,6 +194,10 @@ vector<vector<shared_ptr<Human>>> SocialNetwork::getGroups() {
     return groups;
 }
 
+
+
+
+
 bool SocialNetwork::canBeConnected(shared_ptr<Human> human1, shared_ptr<Human> human2) {
     if (!human1 || !human2) {
         return false;
@@ -214,14 +218,7 @@ bool SocialNetwork::canBeConnected(shared_ptr<Human> human1, shared_ptr<Human> h
     vector<bool> visited(Network.getAllVertices().size(), false);
 
     toVisit.push(vertex1);
-
-    vector<shared_ptr<Vertex<shared_ptr<Human>>>> allVertices = Network.getAllVertices();
-    for (size_t i = 0; i < allVertices.size(); ++i) {
-        if (allVertices[i] == vertex1) {
-            visited[i] = true;
-            break;
-        }
-    }
+    visited[Network.getVertexIndex(vertex1)] = true;
 
     while (!toVisit.empty()) {
         auto currentVertex = toVisit.front();
@@ -233,95 +230,82 @@ bool SocialNetwork::canBeConnected(shared_ptr<Human> human1, shared_ptr<Human> h
 
         for (auto& edge : Network.getEdges(currentVertex)) {
             auto neighbor = edge->getDestination();
-
-            // Find the index of the neighbor in the list of vertices
-            for (size_t i = 0; i < allVertices.size(); ++i) {
-                if (allVertices[i] == neighbor && !visited[i]) {
-                    toVisit.push(neighbor);
-                    visited[i] = true;
-                    break;
-                }
+            int index = Network.getVertexIndex(neighbor);
+            if (!visited[index]) {
+                toVisit.push(neighbor);
+                visited[index] = true;
             }
         }
     }
 
     return false;
 }
+
+
+
+
+
+
+
+
 vector<shared_ptr<Human>> SocialNetwork::connectionOrder(shared_ptr<Human> human1, shared_ptr<Human> human2) {
+    // Return the connection chain between these two humans if it exists, else return an empty vector.
+    
+    // Edge Case 1: If either human is null, return an empty vector
     if (!human1 || !human2) {
         return {};
     }
 
+    // Edge Case 2: If both humans are the same, return a vector containing only human1
     if (human1 == human2) {
         return {human1};
     }
 
+    // Retrieve the vertices for the humans from the network
     auto vertex1 = Network.getVertex(human1);
     auto vertex2 = Network.getVertex(human2);
 
+    // Edge Case 3: If either human is not found in the network, return an empty vector
     if (!vertex1 || !vertex2) {
         return {};
     }
 
-    vector<shared_ptr<Vertex<shared_ptr<Human>>>> visitedVertices = Network.BFSTraversal(vertex1);
-    vector<shared_ptr<Vertex<shared_ptr<Human>>>> vertices;
-    vector<shared_ptr<Vertex<shared_ptr<Human>>>> parentVertices;
+    // BFS to find the shortest path between human1 and human2
+    vector<shared_ptr<Human>> connectionChain;  // To store the connection chain
+    unordered_map<shared_ptr<Vertex<shared_ptr<Human>>>, shared_ptr<Vertex<shared_ptr<Human>>>> parent;
 
+    // Initialize BFS with the first human
     queue<shared_ptr<Vertex<shared_ptr<Human>>>> toVisit;
     toVisit.push(vertex1);
-    vertices.push_back(vertex1);
-    parentVertices.push_back(nullptr);
+    parent[vertex1] = nullptr;  // No parent for the starting human
 
+    // Perform BFS to find the path from human1 to human2
     while (!toVisit.empty()) {
         auto currentVertex = toVisit.front();
         toVisit.pop();
 
+        // If we reached human2, construct the connection chain
         if (currentVertex == vertex2) {
+            // Backtrack from human2 to human1 to build the path
             shared_ptr<Vertex<shared_ptr<Human>>> vertex = vertex2;
-            vector<shared_ptr<Human>> connectionChain;
-
             while (vertex != nullptr) {
-                connectionChain.push_back(vertex->getData());
-
-                shared_ptr<Vertex<shared_ptr<Human>>> parent = nullptr;
-                for (size_t i = 0; i < vertices.size(); ++i) {
-                    if (vertices[i] == vertex) {
-                        parent = parentVertices[i];
-                        break;
-                    }
-                }
-
-                vertex = parent;
+                connectionChain.push_back(vertex->getData());  // Add human to the chain
+                vertex = parent[vertex];  // Move to the parent (previous human in the path)
             }
-
-            // Reverse the chain to get the correct order
-            vector<shared_ptr<Human>> reversedConnectionChain;
-            for (int i = connectionChain.size() - 1; i >= 0; --i) {
-                reversedConnectionChain.push_back(connectionChain[i]);
-            }
-
-            return reversedConnectionChain;
+            reverse(connectionChain.begin(), connectionChain.end());  // Reverse the chain to get the correct order
+            return connectionChain;
         }
 
-        vector<shared_ptr<Vertex<shared_ptr<Human>>>> adjacentVertices = Network.getAdjacentVertices(currentVertex);
-        for (size_t i = 0; i < adjacentVertices.size(); ++i) {
-            shared_ptr<Vertex<shared_ptr<Human>>> neighbor = adjacentVertices[i];
-            bool alreadyVisited = false;
-
-            for (size_t j = 0; j < vertices.size(); ++j) {
-                if (vertices[j] == neighbor) {
-                    alreadyVisited = true;
-                    break;
-                }
-            }
-
-            if (!alreadyVisited) {
+        // Visit all neighbors (friends) of the current human
+        for (auto& edge : Network.getEdges(currentVertex)) {
+            auto neighbor = edge->getDestination();
+            if (parent.find(neighbor) == parent.end()) {  // If the neighbor has not been visited
                 toVisit.push(neighbor);
-                vertices.push_back(neighbor);
-                parentVertices.push_back(currentVertex);
+                parent[neighbor] = currentVertex;  // Set the parent of the neighbor to the current human
             }
         }
     }
 
+    // If no path exists, return an empty vector
     return {};
 }

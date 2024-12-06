@@ -194,6 +194,9 @@ vector<vector<shared_ptr<Human>>> SocialNetwork::getGroups() {
     return groups;
 }
 
+
+
+
 bool SocialNetwork::canBeConnected(shared_ptr<Human> human1, shared_ptr<Human> human2) {
     if (!human1 || !human2) {
         return false;
@@ -247,81 +250,65 @@ bool SocialNetwork::canBeConnected(shared_ptr<Human> human1, shared_ptr<Human> h
 
     return false;
 }
+
+
+
+
 vector<shared_ptr<Human>> SocialNetwork::connectionOrder(shared_ptr<Human> human1, shared_ptr<Human> human2) {
     if (!human1 || !human2) {
-        return {};
+        return {};  // If either human is null, return empty
     }
 
     if (human1 == human2) {
-        return {human1};
+        return {human1};  // If both humans are the same, return a vector containing only human1
     }
 
     auto vertex1 = Network.getVertex(human1);
     auto vertex2 = Network.getVertex(human2);
 
     if (!vertex1 || !vertex2) {
-        return {};
+        return {};  // If either human is not found in the network, return empty
     }
 
+    // Perform BFS to get the traversal order starting from vertex1
     vector<shared_ptr<Vertex<shared_ptr<Human>>>> visitedVertices = Network.BFSTraversal(vertex1);
-    vector<shared_ptr<Vertex<shared_ptr<Human>>>> vertices;
-    vector<shared_ptr<Vertex<shared_ptr<Human>>>> parentVertices;
 
+    // Create a parent map to reconstruct the path
+    unordered_map<shared_ptr<Vertex<shared_ptr<Human>>>, shared_ptr<Vertex<shared_ptr<Human>>>> parent;
+
+    // BFS traversal to update the parent map
     queue<shared_ptr<Vertex<shared_ptr<Human>>>> toVisit;
     toVisit.push(vertex1);
-    vertices.push_back(vertex1);
-    parentVertices.push_back(nullptr);
+    parent[vertex1] = nullptr;  // The parent of the starting vertex is nullptr
 
     while (!toVisit.empty()) {
         auto currentVertex = toVisit.front();
         toVisit.pop();
 
+        // If we've reached the second human, construct the connection chain
         if (currentVertex == vertex2) {
             shared_ptr<Vertex<shared_ptr<Human>>> vertex = vertex2;
             vector<shared_ptr<Human>> connectionChain;
 
             while (vertex != nullptr) {
                 connectionChain.push_back(vertex->getData());
-
-                shared_ptr<Vertex<shared_ptr<Human>>> parent = nullptr;
-                for (size_t i = 0; i < vertices.size(); ++i) {
-                    if (vertices[i] == vertex) {
-                        parent = parentVertices[i];
-                        break;
-                    }
-                }
-
-                vertex = parent;
+                vertex = parent[vertex];  // Backtrack to the parent vertex
             }
 
-            // Reverse the chain to get the correct order
-            vector<shared_ptr<Human>> reversedConnectionChain;
-            for (int i = connectionChain.size() - 1; i >= 0; --i) {
-                reversedConnectionChain.push_back(connectionChain[i]);
-            }
-
-            return reversedConnectionChain;
+            reverse(connectionChain.begin(), connectionChain.end());  // Reverse the path to get correct order
+            return connectionChain;
         }
 
+        // Visit all neighbors (friends) of the current human
         vector<shared_ptr<Vertex<shared_ptr<Human>>>> adjacentVertices = Network.getAdjacentVertices(currentVertex);
-        for (size_t i = 0; i < adjacentVertices.size(); ++i) {
-            shared_ptr<Vertex<shared_ptr<Human>>> neighbor = adjacentVertices[i];
-            bool alreadyVisited = false;
-
-            for (size_t j = 0; j < vertices.size(); ++j) {
-                if (vertices[j] == neighbor) {
-                    alreadyVisited = true;
-                    break;
-                }
-            }
-
-            if (!alreadyVisited) {
+        for (auto& neighbor : adjacentVertices) {
+            if (parent.find(neighbor) == parent.end()) {  // If the neighbor hasn't been visited
                 toVisit.push(neighbor);
-                vertices.push_back(neighbor);
-                parentVertices.push_back(currentVertex);
+                parent[neighbor] = currentVertex;  // Set the parent of the neighbor to the current vertex
             }
         }
     }
 
+    // If no path exists, return an empty vector
     return {};
 }

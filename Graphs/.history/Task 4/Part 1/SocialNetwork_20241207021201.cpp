@@ -194,6 +194,9 @@ vector<vector<shared_ptr<Human>>> SocialNetwork::getGroups() {
     return groups;
 }
 
+
+
+
 bool SocialNetwork::canBeConnected(shared_ptr<Human> human1, shared_ptr<Human> human2) {
     if (!human1 || !human2) {
         return false;
@@ -264,13 +267,12 @@ vector<shared_ptr<Human>> SocialNetwork::connectionOrder(shared_ptr<Human> human
     }
 
     vector<shared_ptr<Vertex<shared_ptr<Human>>>> visitedVertices = Network.BFSTraversal(vertex1);
-    vector<shared_ptr<Vertex<shared_ptr<Human>>>> vertices;
-    vector<shared_ptr<Vertex<shared_ptr<Human>>>> parentVertices;
+
+    vector<pair<shared_ptr<Vertex<shared_ptr<Human>>>, shared_ptr<Vertex<shared_ptr<Human>>>>> parent;
 
     queue<shared_ptr<Vertex<shared_ptr<Human>>>> toVisit;
     toVisit.push(vertex1);
-    vertices.push_back(vertex1);
-    parentVertices.push_back(nullptr);
+    parent.push_back({vertex1, nullptr});
 
     while (!toVisit.empty()) {
         auto currentVertex = toVisit.front();
@@ -282,46 +284,31 @@ vector<shared_ptr<Human>> SocialNetwork::connectionOrder(shared_ptr<Human> human
 
             while (vertex != nullptr) {
                 connectionChain.push_back(vertex->getData());
-
-                shared_ptr<Vertex<shared_ptr<Human>>> parent = nullptr;
-                for (size_t i = 0; i < vertices.size(); ++i) {
-                    if (vertices[i] == vertex) {
-                        parent = parentVertices[i];
-                        break;
-                    }
+                auto it = find_if(parent.begin(), parent.end(), [vertex](const pair<shared_ptr<Vertex<shared_ptr<Human>>>, shared_ptr<Vertex<shared_ptr<Human>>>>& p) {
+                    return p.first == vertex;
+                });
+                if (it != parent.end()) {
+                    vertex = it->second;
+                } else {
+                    vertex = nullptr;
                 }
-
-                vertex = parent;
             }
 
-            // Reverse the chain to get the correct order
-            vector<shared_ptr<Human>> reversedConnectionChain;
-            for (int i = connectionChain.size() - 1; i >= 0; --i) {
-                reversedConnectionChain.push_back(connectionChain[i]);
-            }
-
-            return reversedConnectionChain;
+            reverse(connectionChain.begin(), connectionChain.end());
+            return connectionChain;
         }
 
         vector<shared_ptr<Vertex<shared_ptr<Human>>>> adjacentVertices = Network.getAdjacentVertices(currentVertex);
-        for (size_t i = 0; i < adjacentVertices.size(); ++i) {
-            shared_ptr<Vertex<shared_ptr<Human>>> neighbor = adjacentVertices[i];
-            bool alreadyVisited = false;
-
-            for (size_t j = 0; j < vertices.size(); ++j) {
-                if (vertices[j] == neighbor) {
-                    alreadyVisited = true;
-                    break;
-                }
-            }
-
-            if (!alreadyVisited) {
+        for (auto& neighbor : adjacentVertices) {
+            if (find_if(parent.begin(), parent.end(), [neighbor](const pair<shared_ptr<Vertex<shared_ptr<Human>>>, shared_ptr<Vertex<shared_ptr<Human>>>>& p) {
+                return p.first == neighbor;
+            }) == parent.end()) {
                 toVisit.push(neighbor);
-                vertices.push_back(neighbor);
-                parentVertices.push_back(currentVertex);
+                parent.push_back({neighbor, currentVertex});
             }
         }
     }
 
     return {};
 }
+
