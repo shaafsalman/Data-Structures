@@ -367,7 +367,6 @@ void testGetFlightPlan(int& totalMarks) {
         network.addFlight(flight7);
 
         auto flightPlan = network.getFlightPlan(airport1, airport5);
-              cout<<flightPlan.size()<<endl;
         assert(flightPlan.size() == 3); // JFK -> SFO -> DFW
         totalMarks += 2;
         std::cout << "Test Case 17 Passed: Get flight plan" << std::endl;

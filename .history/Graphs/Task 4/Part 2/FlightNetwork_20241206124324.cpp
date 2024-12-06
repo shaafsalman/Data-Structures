@@ -425,13 +425,6 @@ shared_ptr<Flight> FlightNetwork::getFlight(string flightNumber) {
     return nullptr;
 }
 
-
-
-
-
-
-
-
 vector<shared_ptr<Airport>> FlightNetwork::getShortestPath(shared_ptr<Airport> source, shared_ptr<Airport> destination) {
     std::cout << "-Network----------------------------------------------------" << std::endl;
 
@@ -450,32 +443,22 @@ vector<shared_ptr<Airport>> FlightNetwork::getShortestPath(shared_ptr<Airport> s
     std::cout << "Finding shortest path from " << source->getName() 
               << " to " << destination->getName() << std::endl;
 
-    // Use Dijkstra’s algorithm to find the shortest path based on distance
-    std::unordered_map<std::shared_ptr<Airport>, double> distances;
+    // Using BFS to find the shortest path (in terms of hops)
+    std::queue<std::shared_ptr<Airport>> queue;
     std::unordered_map<std::shared_ptr<Airport>, std::shared_ptr<Airport>> previousAirport;
     std::unordered_set<std::shared_ptr<Airport>> visited;
-    auto compare = [](std::pair<std::shared_ptr<Airport>, double>& left, std::pair<std::shared_ptr<Airport>, double>& right) {
-        return left.second > right.second;  // Min-heap based on distance
-    };
-    std::priority_queue<std::pair<std::shared_ptr<Airport>, double>, std::vector<std::pair<std::shared_ptr<Airport>, double>>, decltype(compare)> queue(compare);
 
-    // Initialize distances: all airports are initially at infinite distance except the source
-    for (const auto& airport : Airports) {
-        distances[airport] = std::numeric_limits<double>::infinity();
-    }
-    distances[source] = 0.0;
-    
-    queue.push({source, 0.0});
+    // Initialize BFS
+    queue.push(source);
+    visited.insert(source);
 
     while (!queue.empty()) {
-        auto current = queue.top();
+        auto currentAirport = queue.front();
         queue.pop();
-        auto currentAirport = current.first;
-        double currentDistance = current.second;
 
-        // If destination is reached, reconstruct the path
+        // If we reached the destination, reconstruct the path
         if (currentAirport == destination) {
-            std::vector<shared_ptr<Airport>> path;
+            vector<shared_ptr<Airport>> path;
             while (currentAirport != nullptr) {
                 path.push_back(currentAirport);
                 currentAirport = previousAirport[currentAirport];
@@ -492,15 +475,13 @@ vector<shared_ptr<Airport>> FlightNetwork::getShortestPath(shared_ptr<Airport> s
             return path;
         }
 
-        // Process all neighboring airports (flights)
+        // Process all neighboring airports (through all available flights)
         for (const auto& flight : currentAirport->getAllFlights()) {
             auto neighborAirport = flight->getDestinationAirport();
-            double newDistance = currentDistance + flight->getDistance();
-
-            if (newDistance < distances[neighborAirport]) {
-                distances[neighborAirport] = newDistance;
+            if (visited.find(neighborAirport) == visited.end()) {
+                visited.insert(neighborAirport);
+                queue.push(neighborAirport);
                 previousAirport[neighborAirport] = currentAirport;
-                queue.push({neighborAirport, newDistance});
             }
         }
     }
@@ -509,8 +490,6 @@ vector<shared_ptr<Airport>> FlightNetwork::getShortestPath(shared_ptr<Airport> s
               << " and " << destination->getName() << std::endl;
     return {};  // Return an empty path if no path is found
 }
-
-
 
 
 vector<shared_ptr<Airport>> FlightNetwork::getCheapestPath(shared_ptr<Airport> source, shared_ptr<Airport> destination) {
@@ -573,56 +552,24 @@ vector<shared_ptr<Airport>> FlightNetwork::getCheapestPath(shared_ptr<Airport> s
 
 // Get Flight Plan
 vector<shared_ptr<Airport>> FlightNetwork::getFlightPlan(shared_ptr<Airport> source, shared_ptr<Airport> destination) {
-    vector<vector<shared_ptr<Airport>>> allPaths;  // Will hold all the paths found
-    vector<shared_ptr<Airport>> currentPath;       // Tracks the current path during exploration
-    vector<shared_ptr<Airport>> reachableAirports = AirportsReachable(source);  // Get reachable airports from source
+    auto shortest = getShortestPath(source, destination);
+    auto cheapest = getCheapestPath(source, destination);
 
-    // Traverse all reachable airports from the source
-    for (const auto& airport : reachableAirports) {
-        // If the airport is the destination, create a path
-        if (airport == destination) {
-            currentPath.push_back(source);
-            currentPath.push_back(airport);
-            allPaths.push_back(currentPath);
-            currentPath.clear();
-        } else {
-            // If it's not the destination, continue exploring
-            vector<shared_ptr<Airport>> furtherReachableAirports = AirportsReachable(airport);
-            for (const auto& nextAirport : furtherReachableAirports) {
-                if (nextAirport == destination) {
-                    currentPath.push_back(source);
-                    currentPath.push_back(airport);
-                    currentPath.push_back(nextAirport);
-                    allPaths.push_back(currentPath);
-                    currentPath.clear();
-                }
-            }
-        }
+    if (shortest == cheapest) {
+        return shortest;
     }
 
-    // For simplicity, the flight plan is just the first path found
-    // Print all paths
-    std::cout << "TOTAL PATHS: { ";
-    for (size_t i = 0; i < allPaths.size(); ++i) {
-        std::cout << "P" << i + 1 << " : { ";
-        for (size_t j = 0; j < allPaths[i].size(); ++j) {
-            std::cout << allPaths[i][j]->getName();
-            if (j < allPaths[i].size() - 1) {
-                std::cout << " -> ";
-            }
-        }
-        std::cout << " }";
-        if (i < allPaths.size() - 1) {
-            std::cout << ", ";
-        }
-    }
-    std::cout << " }\n";
+    // Use a dummy getEdgeWeight method as the original class lacks this feature
+    auto sourceVertex = make_shared<Vertex<shared_ptr<Airport>>>(source);
+    auto destinationVertex = make_shared<Vertex<shared_ptr<Airport>>>(destination);
+    int shortestDistance = AirportNetwork_distance.getEdge(sourceVertex->getData(), destinationVertex->getData())->getWeight();
+    int cheapestCost = AirportNetwork_cost.getEdge(sourceVertex->getData(), destinationVertex->getData())->getWeight();
 
-    // For this example, return the first path as the flight plan
-    std::cout << "FLIGHT PLAN = P1\n";
-    return allPaths.empty() ? vector<shared_ptr<Airport>>{} : allPaths[0];
+    double percentageIncreaseShortest = (shortestDistance / (double)cheapestCost - 1) * 100;
+    double percentageIncreaseCheapest = (cheapestCost / (double)shortestDistance - 1) * 100;
+
+    return percentageIncreaseShortest < percentageIncreaseCheapest ? shortest : cheapest;
 }
-
 
 // Get All Flights
 vector<shared_ptr<Flight>> FlightNetwork::getAllFlights() {
@@ -735,27 +682,18 @@ vector<shared_ptr<Airport>> FlightNetwork::alternateRouteForFlight(shared_ptr<Fl
 
 // Airports Reachable
 vector<shared_ptr<Airport>> FlightNetwork::AirportsReachable(shared_ptr<Airport> airport) {
-    vector<shared_ptr<Airport>> reachableAirports;  // List to store all reachable airports
+    auto connectedComponents = AirportNetwork_distance.connectedComponents();
 
-    // Get the shortest path and cheapest path from the given airport to all other airports
-    for (const auto& potentialDestination : Airports) {
-        if (airport != potentialDestination) {
-            // Find the shortest path
-            vector<shared_ptr<Airport>> shortestPath = getShortestPath(airport, potentialDestination);
-            if (!shortestPath.empty()) {
-                // If a path exists, it's reachable via shortest path
-                reachableAirports.push_back(potentialDestination);
-            } else {
-                // Find the cheapest path
-                vector<shared_ptr<Airport>> cheapestPath = getCheapestPath(airport, potentialDestination);
-                if (!cheapestPath.empty()) {
-                    // If a path exists, it's reachable via cheapest path
-                    reachableAirports.push_back(potentialDestination);
+    vector<shared_ptr<Airport>> reachableAirports;
+    for (const auto& component : connectedComponents) {
+        for (const auto& vertex : component) {
+            if (vertex->getData() == airport) {
+                for (const auto& reachable : component) {
+                    reachableAirports.push_back(reachable->getData());
                 }
+                return reachableAirports;
             }
         }
     }
-
-    // Return the list of reachable airports
     return reachableAirports;
 }

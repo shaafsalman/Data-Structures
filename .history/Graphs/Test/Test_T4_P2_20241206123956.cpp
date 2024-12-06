@@ -323,6 +323,7 @@ void testShortestCheapestRoute(int& totalMarks) {
         network.addFlight(flight3);
         auto shortestRoute = network.getShortestPath(airport1, airport3);
         auto cheapestRoute = network.getCheapestPath(airport1, airport3);
+        cout<<shortestRoute.size()<<endl;
         assert(shortestRoute.size() == 3);
         assert(cheapestRoute.size() == 3);
         totalMarks += 1;
@@ -367,7 +368,6 @@ void testGetFlightPlan(int& totalMarks) {
         network.addFlight(flight7);
 
         auto flightPlan = network.getFlightPlan(airport1, airport5);
-              cout<<flightPlan.size()<<endl;
         assert(flightPlan.size() == 3); // JFK -> SFO -> DFW
         totalMarks += 2;
         std::cout << "Test Case 17 Passed: Get flight plan" << std::endl;

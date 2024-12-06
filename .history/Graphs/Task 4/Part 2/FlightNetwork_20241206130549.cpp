@@ -573,35 +573,44 @@ vector<shared_ptr<Airport>> FlightNetwork::getCheapestPath(shared_ptr<Airport> s
 
 // Get Flight Plan
 vector<shared_ptr<Airport>> FlightNetwork::getFlightPlan(shared_ptr<Airport> source, shared_ptr<Airport> destination) {
-    vector<vector<shared_ptr<Airport>>> allPaths;  // Will hold all the paths found
-    vector<shared_ptr<Airport>> currentPath;       // Tracks the current path during exploration
-    vector<shared_ptr<Airport>> reachableAirports = AirportsReachable(source);  // Get reachable airports from source
+    vector<shared_ptr<Airport>> flightPlan;
+    vector<vector<shared_ptr<Airport>>> allPaths;
+    vector<shared_ptr<Airport>> currentPath;
 
-    // Traverse all reachable airports from the source
-    for (const auto& airport : reachableAirports) {
-        // If the airport is the destination, create a path
-        if (airport == destination) {
-            currentPath.push_back(source);
-            currentPath.push_back(airport);
+    // Simple DFS approach to explore all paths
+    currentPath.push_back(source);
+    
+    // Traverse all airports reachable from the source airport
+    while (!currentPath.empty()) {
+        shared_ptr<Airport> currentAirport = currentPath.back();
+
+        // If we reached the destination, add the current path to allPaths
+        if (currentAirport == destination) {
             allPaths.push_back(currentPath);
-            currentPath.clear();
-        } else {
-            // If it's not the destination, continue exploring
-            vector<shared_ptr<Airport>> furtherReachableAirports = AirportsReachable(airport);
-            for (const auto& nextAirport : furtherReachableAirports) {
-                if (nextAirport == destination) {
-                    currentPath.push_back(source);
-                    currentPath.push_back(airport);
-                    currentPath.push_back(nextAirport);
-                    allPaths.push_back(currentPath);
-                    currentPath.clear();
-                }
+            currentPath.pop_back();
+            continue;
+        }
+
+        // Get all reachable airports from the current airport
+        vector<shared_ptr<Airport>> reachableAirports = AirportsReachable(currentAirport);
+
+        bool addedNewAirport = false;
+        for (auto& nextAirport : reachableAirports) {
+            // Only add the next airport if it has not been visited yet in this path
+            if (std::find(currentPath.begin(), currentPath.end(), nextAirport) == currentPath.end()) {
+                currentPath.push_back(nextAirport);
+                addedNewAirport = true;
+                break;
             }
+        }
+
+        // If no new airport was added, it means we are at a dead end, so we backtrack
+        if (!addedNewAirport) {
+            currentPath.pop_back();
         }
     }
 
-    // For simplicity, the flight plan is just the first path found
-    // Print all paths
+    // Step 1: Display all paths
     std::cout << "TOTAL PATHS: { ";
     for (size_t i = 0; i < allPaths.size(); ++i) {
         std::cout << "P" << i + 1 << " : { ";
@@ -618,11 +627,15 @@ vector<shared_ptr<Airport>> FlightNetwork::getFlightPlan(shared_ptr<Airport> sou
     }
     std::cout << " }\n";
 
-    // For this example, return the first path as the flight plan
-    std::cout << "FLIGHT PLAN = P1\n";
-    return allPaths.empty() ? vector<shared_ptr<Airport>>{} : allPaths[0];
+    // Flight Plan (choosing the first path as the flight plan)
+    if (!allPaths.empty()) {
+        std::cout << "FLIGHT PLAN = P1\n";
+        return allPaths[0];
+    } else {
+        std::cout << "No path found.\n";
+        return {};
+    }
 }
-
 
 // Get All Flights
 vector<shared_ptr<Flight>> FlightNetwork::getAllFlights() {
@@ -735,27 +748,18 @@ vector<shared_ptr<Airport>> FlightNetwork::alternateRouteForFlight(shared_ptr<Fl
 
 // Airports Reachable
 vector<shared_ptr<Airport>> FlightNetwork::AirportsReachable(shared_ptr<Airport> airport) {
-    vector<shared_ptr<Airport>> reachableAirports;  // List to store all reachable airports
+    auto connectedComponents = AirportNetwork_distance.connectedComponents();
 
-    // Get the shortest path and cheapest path from the given airport to all other airports
-    for (const auto& potentialDestination : Airports) {
-        if (airport != potentialDestination) {
-            // Find the shortest path
-            vector<shared_ptr<Airport>> shortestPath = getShortestPath(airport, potentialDestination);
-            if (!shortestPath.empty()) {
-                // If a path exists, it's reachable via shortest path
-                reachableAirports.push_back(potentialDestination);
-            } else {
-                // Find the cheapest path
-                vector<shared_ptr<Airport>> cheapestPath = getCheapestPath(airport, potentialDestination);
-                if (!cheapestPath.empty()) {
-                    // If a path exists, it's reachable via cheapest path
-                    reachableAirports.push_back(potentialDestination);
+    vector<shared_ptr<Airport>> reachableAirports;
+    for (const auto& component : connectedComponents) {
+        for (const auto& vertex : component) {
+            if (vertex->getData() == airport) {
+                for (const auto& reachable : component) {
+                    reachableAirports.push_back(reachable->getData());
                 }
+                return reachableAirports;
             }
         }
     }
-
-    // Return the list of reachable airports
     return reachableAirports;
 }

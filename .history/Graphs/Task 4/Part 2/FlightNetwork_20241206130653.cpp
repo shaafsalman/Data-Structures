@@ -735,27 +735,18 @@ vector<shared_ptr<Airport>> FlightNetwork::alternateRouteForFlight(shared_ptr<Fl
 
 // Airports Reachable
 vector<shared_ptr<Airport>> FlightNetwork::AirportsReachable(shared_ptr<Airport> airport) {
-    vector<shared_ptr<Airport>> reachableAirports;  // List to store all reachable airports
+    auto connectedComponents = AirportNetwork_distance.connectedComponents();
 
-    // Get the shortest path and cheapest path from the given airport to all other airports
-    for (const auto& potentialDestination : Airports) {
-        if (airport != potentialDestination) {
-            // Find the shortest path
-            vector<shared_ptr<Airport>> shortestPath = getShortestPath(airport, potentialDestination);
-            if (!shortestPath.empty()) {
-                // If a path exists, it's reachable via shortest path
-                reachableAirports.push_back(potentialDestination);
-            } else {
-                // Find the cheapest path
-                vector<shared_ptr<Airport>> cheapestPath = getCheapestPath(airport, potentialDestination);
-                if (!cheapestPath.empty()) {
-                    // If a path exists, it's reachable via cheapest path
-                    reachableAirports.push_back(potentialDestination);
+    vector<shared_ptr<Airport>> reachableAirports;
+    for (const auto& component : connectedComponents) {
+        for (const auto& vertex : component) {
+            if (vertex->getData() == airport) {
+                for (const auto& reachable : component) {
+                    reachableAirports.push_back(reachable->getData());
                 }
+                return reachableAirports;
             }
         }
     }
-
-    // Return the list of reachable airports
     return reachableAirports;
 }

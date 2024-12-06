@@ -573,55 +573,68 @@ vector<shared_ptr<Airport>> FlightNetwork::getCheapestPath(shared_ptr<Airport> s
 
 // Get Flight Plan
 vector<shared_ptr<Airport>> FlightNetwork::getFlightPlan(shared_ptr<Airport> source, shared_ptr<Airport> destination) {
-    vector<vector<shared_ptr<Airport>>> allPaths;  // Will hold all the paths found
-    vector<shared_ptr<Airport>> currentPath;       // Tracks the current path during exploration
-    vector<shared_ptr<Airport>> reachableAirports = AirportsReachable(source);  // Get reachable airports from source
-
-    // Traverse all reachable airports from the source
-    for (const auto& airport : reachableAirports) {
-        // If the airport is the destination, create a path
-        if (airport == destination) {
-            currentPath.push_back(source);
-            currentPath.push_back(airport);
-            allPaths.push_back(currentPath);
-            currentPath.clear();
-        } else {
-            // If it's not the destination, continue exploring
-            vector<shared_ptr<Airport>> furtherReachableAirports = AirportsReachable(airport);
-            for (const auto& nextAirport : furtherReachableAirports) {
-                if (nextAirport == destination) {
-                    currentPath.push_back(source);
-                    currentPath.push_back(airport);
-                    currentPath.push_back(nextAirport);
-                    allPaths.push_back(currentPath);
-                    currentPath.clear();
-                }
-            }
+    // Generate all possible paths from source to destination
+    auto allPaths = getAllPaths(source, destination);
+    
+    // Display all available paths
+    std::cout << "TOTAL PATHS: ";
+    for (const auto& path : allPaths) {
+        std::cout << "{";
+        for (size_t i = 0; i < path.size(); ++i) {
+            std::cout << path[i]->getName();
+            if (i < path.size() - 1) std::cout << ", ";
         }
+        std::cout << "} ";
     }
+    std::cout << std::endl;
 
-    // For simplicity, the flight plan is just the first path found
-    // Print all paths
-    std::cout << "TOTAL PATHS: { ";
-    for (size_t i = 0; i < allPaths.size(); ++i) {
-        std::cout << "P" << i + 1 << " : { ";
-        for (size_t j = 0; j < allPaths[i].size(); ++j) {
-            std::cout << allPaths[i][j]->getName();
-            if (j < allPaths[i].size() - 1) {
-                std::cout << " -> ";
-            }
-        }
-        std::cout << " }";
-        if (i < allPaths.size() - 1) {
-            std::cout << ", ";
-        }
+    // Sort paths by distance (for shortest path)
+    std::vector<std::vector<shared_ptr<Airport>>> sortedByDistance = allPaths;
+    std::sort(sortedByDistance.begin(), sortedByDistance.end(), [this](const std::vector<shared_ptr<Airport>>& path1, const std::vector<shared_ptr<Airport>>& path2) {
+        int distance1 = calculateTotalDistance(path1);
+        int distance2 = calculateTotalDistance(path2);
+        return distance1 < distance2;
+    });
+
+    // Sort paths by cost (for cheapest path)
+    std::vector<std::vector<shared_ptr<Airport>>> sortedByCost = allPaths;
+    std::sort(sortedByCost.begin(), sortedByCost.end(), [this](const std::vector<shared_ptr<Airport>>& path1, const std::vector<shared_ptr<Airport>>& path2) {
+        int cost1 = calculateTotalCost(path1);
+        int cost2 = calculateTotalCost(path2);
+        return cost1 < cost2;
+    });
+
+    // Display the shortest path
+    std::cout << "SHORTEST PATH (by distance): ";
+    for (size_t i = 0; i < sortedByDistance[0].size(); ++i) {
+        std::cout << sortedByDistance[0][i]->getName();
+        if (i < sortedByDistance[0].size() - 1) std::cout << " -> ";
     }
-    std::cout << " }\n";
+    std::cout << " | Total Distance: " << calculateTotalDistance(sortedByDistance[0]) << " km" << std::endl;
 
-    // For this example, return the first path as the flight plan
-    std::cout << "FLIGHT PLAN = P1\n";
-    return allPaths.empty() ? vector<shared_ptr<Airport>>{} : allPaths[0];
+    // Display the cheapest path
+    std::cout << "CHEAPEST PATH (by cost): ";
+    for (size_t i = 0; i < sortedByCost[0].size(); ++i) {
+        std::cout << sortedByCost[0][i]->getName();
+        if (i < sortedByCost[0].size() - 1) std::cout << " -> ";
+    }
+    std::cout << " | Total Cost: " << calculateTotalCost(sortedByCost[0]) << " USD" << std::endl;
+
+    // Select the flight plan based on given criteria (for example, choose shortest path)
+    // Here we select the shortest path for demonstration, but this can be changed to choose the cheapest path
+    std::vector<shared_ptr<Airport>> selectedFlightPlan = sortedByDistance[0]; // Change to sortedByCost[0] to select cheapest path
+    
+    // Display the selected flight plan
+    std::cout << "FLIGHT PLAN = ";
+    for (size_t i = 0; i < selectedFlightPlan.size(); ++i) {
+        std::cout << selectedFlightPlan[i]->getName();
+        if (i < selectedFlightPlan.size() - 1) std::cout << " -> ";
+    }
+    std::cout << std::endl;
+
+    return selectedFlightPlan;
 }
+
 
 
 // Get All Flights
@@ -735,27 +748,18 @@ vector<shared_ptr<Airport>> FlightNetwork::alternateRouteForFlight(shared_ptr<Fl
 
 // Airports Reachable
 vector<shared_ptr<Airport>> FlightNetwork::AirportsReachable(shared_ptr<Airport> airport) {
-    vector<shared_ptr<Airport>> reachableAirports;  // List to store all reachable airports
+    auto connectedComponents = AirportNetwork_distance.connectedComponents();
 
-    // Get the shortest path and cheapest path from the given airport to all other airports
-    for (const auto& potentialDestination : Airports) {
-        if (airport != potentialDestination) {
-            // Find the shortest path
-            vector<shared_ptr<Airport>> shortestPath = getShortestPath(airport, potentialDestination);
-            if (!shortestPath.empty()) {
-                // If a path exists, it's reachable via shortest path
-                reachableAirports.push_back(potentialDestination);
-            } else {
-                // Find the cheapest path
-                vector<shared_ptr<Airport>> cheapestPath = getCheapestPath(airport, potentialDestination);
-                if (!cheapestPath.empty()) {
-                    // If a path exists, it's reachable via cheapest path
-                    reachableAirports.push_back(potentialDestination);
+    vector<shared_ptr<Airport>> reachableAirports;
+    for (const auto& component : connectedComponents) {
+        for (const auto& vertex : component) {
+            if (vertex->getData() == airport) {
+                for (const auto& reachable : component) {
+                    reachableAirports.push_back(reachable->getData());
                 }
+                return reachableAirports;
             }
         }
     }
-
-    // Return the list of reachable airports
     return reachableAirports;
 }
