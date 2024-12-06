@@ -23,8 +23,8 @@ Graph<T>::Graph(bool directed, bool weighted) {
     // 3. Undirected and Weighted
     // 4. Undirected and Unweighted
 
-    // Solution:\
-    this->directed = directed;
+    // Solution:
+        this->directed = directed;
     this->weighted = weighted;
 }
 
@@ -125,7 +125,8 @@ shared_ptr<Vertex<T>> Graph<T>::getVertex(T data) {
 
     // Solution:
      for (auto vertex : vertices) {
-        if (vertex == data) {  
+        // cout<<vertex->getData()->getName() <<","<<data->getName()<<endl;
+        if (vertex->getData()->getName() == data->getName()) {  
             return vertex;
         }
     }

@@ -125,7 +125,8 @@ shared_ptr<Vertex<T>> Graph<T>::getVertex(T data) {
 
     // Solution:
      for (auto vertex : vertices) {
-        if (vertex == data) {  
+        // cout<<vertex->getData()->getName() <<","<<data->getName()<<endl;
+        if (vertex->getData()->getName() == data->getName()) {  
             return vertex;
         }
     }

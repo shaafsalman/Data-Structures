@@ -176,23 +176,15 @@ void Airport::addDepartureFlight(shared_ptr<Flight> flight) {
         return;
     }
     
-
-    // Add to the list of departure flights
-    departureFlights.push_back(flight);
-    // std::cout << "Added Departure Flight: " << flight->getFlightNumber() 
-    //           << " from " << flight->getDepartureAirport()->getName()
-    //           << " to " << flight->getDestinationAirport()->getName() << std::endl;
-
-    // Add to departure graphs if not already present
     try {
-        // Ensure the source and destination airports are added to the graph before adding the edge
         departureFlights_distance->addVertex(flight->getDepartureAirport());
         departureFlights_distance->addVertex(flight->getDestinationAirport());
         
         departureFlights_distance->addEdge(flight->getDepartureAirport(), flight->getDestinationAirport(), flight->getDistance());
         departureFlights_cost->addEdge(flight->getDepartureAirport(), flight->getDestinationAirport(), flight->getCost());
-    } catch (const std::exception& e) {
-        std::cerr << "Error adding edge to departure graph: " << e.what() << std::endl;
+    } 
+    catch (const std::exception& e) {
+        std::cerr << "Error adding edge to departure  " << e.what() << std::endl;
     }
 }
 
@@ -201,13 +193,8 @@ void Airport::addArrivalFlight(shared_ptr<Flight> flight) {
         return;
     }
 
-    // Add to the list of arrival flights
     arrivalFlights.push_back(flight);
-    // std::cout << "Added Arrival Flight: " << flight->getFlightNumber() 
-    //           << " from " << flight->getDepartureAirport()->getName()
-    //           << " to " << flight->getDestinationAirport()->getName() << std::endl;
 
-    // Add to arrival graphs if not already present
     try {
         // Ensure the source and destination airports are added to the graph before adding the edge
         arrivalFlights_distance->addVertex(flight->getDepartureAirport());
@@ -234,7 +221,6 @@ void Airport::addFlight(shared_ptr<Flight> flight) {
         return;
     }
 
-    // Add the flight to both departure and arrival flights
     addDepartureFlight(flight);
     addArrivalFlight(flight);
 }
@@ -446,7 +432,9 @@ vector<shared_ptr<Airport>> FlightNetwork::getShortestPath(shared_ptr<Airport> s
     //                   << " - Dst: " << flight->getDestinationAirport()->getName() << std::endl;
     //     }
     // }
-
+    // std::cout << "-----------------------------------------------------" << std::endl;
+    // std::cout << "Finding shortest path from " << source->getName() 
+    //           << " to " << destination->getName() << std::endl;
 
     // Use Dijkstra’s algorithm to find the shortest path based on distance
     std::unordered_map<std::shared_ptr<Airport>, double> distances;
@@ -479,7 +467,7 @@ vector<shared_ptr<Airport>> FlightNetwork::getShortestPath(shared_ptr<Airport> s
                 currentAirport = previousAirport[currentAirport];
             }
             std::reverse(path.begin(), path.end());
-          
+        
 
             return path;
         }
@@ -497,15 +485,15 @@ vector<shared_ptr<Airport>> FlightNetwork::getShortestPath(shared_ptr<Airport> s
         }
     }
 
-
-    return {}; 
+    return {};  // Return an empty path if no path is found
 }
 
 
 
 
 vector<shared_ptr<Airport>> FlightNetwork::getCheapestPath(shared_ptr<Airport> source, shared_ptr<Airport> destination) {
-
+    // std::cout << "Finding cheapest path from " << source->getName() 
+    //           << " to " << destination->getName() << std::endl;
 
     // Min-heap priority queue to store airports with their cumulative cost
     auto compare = [](const std::pair<shared_ptr<Airport>, double>& a, const std::pair<shared_ptr<Airport>, double>& b) {
@@ -608,8 +596,7 @@ vector<shared_ptr<Airport>> FlightNetwork::getFlightPlan(shared_ptr<Airport> sou
     // }
     // std::cout << " }\n";
 
-    // // For this example, return the first path as the flight plan
-    // std::cout << "FLIGHT PLAN = P1\n";
+
     return allPaths.empty() ? vector<shared_ptr<Airport>>{} : allPaths[0];
 }
 
@@ -675,8 +662,14 @@ shared_ptr<Airport> FlightNetwork::getLamestAirport() {
 
 // Optimize Graph
 shared_ptr<Graph<shared_ptr<Airport>>> FlightNetwork::OptimizedGraph(bool distance) {
-    return distance ? make_shared<Graph<shared_ptr<Airport>>>(AirportNetwork_distance)
-                    : make_shared<Graph<shared_ptr<Airport>>>(AirportNetwork_cost);
+    // If distance is true, return the graph optimized by distance
+    if (distance) {
+        return make_shared<Graph<shared_ptr<Airport>>>(AirportNetwork_distance);
+    }
+    // If distance is false, return the graph optimized by cost
+    else {
+        return make_shared<Graph<shared_ptr<Airport>>>(AirportNetwork_cost);
+    }
 }
 
 

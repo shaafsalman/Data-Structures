@@ -497,8 +497,9 @@ vector<shared_ptr<Airport>> FlightNetwork::getShortestPath(shared_ptr<Airport> s
         }
     }
 
-
-    return {}; 
+    std::cerr << "No path found between " << source->getName() 
+              << " and " << destination->getName() << std::endl;
+    return {};  // Return an empty path if no path is found
 }
 
 

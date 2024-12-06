@@ -17,7 +17,7 @@ float marks_total = 0;
 float part_marks = 0;
 
 // Helper function to print test results
-void printResult(const string& testName, bool success, float marks) {
+void printResult(const string& testName, bool success, int marks) {
     if (success) {
         cout << GREEN << "[PASS] " << testName << " (Marks: " << marks << ")" << RESET << endl;
         marks_total += marks;
