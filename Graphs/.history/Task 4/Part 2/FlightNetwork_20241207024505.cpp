@@ -316,23 +316,23 @@ shared_ptr<Flight> FlightNetwork::getFlight(string flightNumber) {
     return nullptr;
 }
 
-// Get Shortest
+
+
 vector<shared_ptr<Airport>> FlightNetwork::getShortestPath(shared_ptr<Airport> source, shared_ptr<Airport> destination) {
     vector<shared_ptr<Airport>> airports = Airports;
-    vector<int> distances(airports.size(), INT_MAX);
+    vector<double> distances(airports.size(), std::numeric_limits<double>::infinity());
     vector<int> previous(airports.size(), -1);
     vector<bool> visited(airports.size(), false);
 
-    int sourceIndex = -1;
-    for (int i = 0; i < airports.size(); ++i) {
-        if (airports[i] == source) {
-            sourceIndex = i;
-            break;
-        }
-    }
-    distances[sourceIndex] = 0;
+    auto getIndex = [&](shared_ptr<Airport> airport) {
+        return std::distance(airports.begin(), std::find(airports.begin(), airports.end(), airport));
+    };
+
+    int sourceIndex = getIndex(source);
+    distances[sourceIndex] = 0.0;
 
     for (size_t i = 0; i < airports.size(); ++i) {
+        // Find the unvisited airport with the smallest distance
         int currentIndex = -1;
         for (size_t j = 0; j < airports.size(); ++j) {
             if (!visited[j] && (currentIndex == -1 || distances[j] < distances[currentIndex])) {
@@ -340,7 +340,7 @@ vector<shared_ptr<Airport>> FlightNetwork::getShortestPath(shared_ptr<Airport> s
             }
         }
 
-        if (currentIndex == -1 || distances[currentIndex] == INT_MAX) {
+        if (currentIndex == -1 || distances[currentIndex] == std::numeric_limits<double>::infinity()) {
             break;
         }
 
@@ -349,14 +349,8 @@ vector<shared_ptr<Airport>> FlightNetwork::getShortestPath(shared_ptr<Airport> s
 
         for (const auto& flight : currentAirport->getAllFlights()) {
             auto neighbor = flight->getDestinationAirport();
-            int neighborIndex = -1;
-            for (int k = 0; k < airports.size(); ++k) {
-                if (airports[k] == neighbor) {
-                    neighborIndex = k;
-                    break;
-                }
-            }
-            int newDistance = distances[currentIndex] + flight->getDistance();
+            int neighborIndex = getIndex(neighbor);
+            double newDistance = distances[currentIndex] + flight->getDistance();
 
             if (newDistance < distances[neighborIndex]) {
                 distances[neighborIndex] = newDistance;
@@ -367,14 +361,7 @@ vector<shared_ptr<Airport>> FlightNetwork::getShortestPath(shared_ptr<Airport> s
 
     // Reconstruct the path
     vector<shared_ptr<Airport>> path;
-    int destinationIndex = -1;
-    for (int i = 0; i < airports.size(); ++i) {
-        if (airports[i] == destination) {
-            destinationIndex = i;
-            break;
-        }
-    }
-    for (int at = destinationIndex; at != -1; at = previous[at]) {
+    for (int at = getIndex(destination); at != -1; at = previous[at]) {
         path.push_back(airports[at]);
     }
     std::reverse(path.begin(), path.end());
@@ -384,21 +371,19 @@ vector<shared_ptr<Airport>> FlightNetwork::getShortestPath(shared_ptr<Airport> s
     }
     return {};
 }
-// Get Cheapest
+
 vector<shared_ptr<Airport>> FlightNetwork::getCheapestPath(shared_ptr<Airport> source, shared_ptr<Airport> destination) {
     vector<shared_ptr<Airport>> airports = Airports;
-    vector<int> costs(airports.size(), INT_MAX);
+    vector<double> costs(airports.size(), std::numeric_limits<double>::infinity());
     vector<int> previous(airports.size(), -1);
     vector<bool> visited(airports.size(), false);
 
-    int sourceIndex = -1;
-    for (int i = 0; i < airports.size(); ++i) {
-        if (airports[i] == source) {
-            sourceIndex = i;
-            break;
-        }
-    }
-    costs[sourceIndex] = 0;
+    auto getIndex = [&](shared_ptr<Airport> airport) {
+        return std::distance(airports.begin(), std::find(airports.begin(), airports.end(), airport));
+    };
+
+    int sourceIndex = getIndex(source);
+    costs[sourceIndex] = 0.0;
 
     for (size_t i = 0; i < airports.size(); ++i) {
         int currentIndex = -1;
@@ -408,23 +393,18 @@ vector<shared_ptr<Airport>> FlightNetwork::getCheapestPath(shared_ptr<Airport> s
             }
         }
 
-        if (currentIndex == -1 || costs[currentIndex] == INT_MAX) {
+        if (currentIndex == -1 || costs[currentIndex] == std::numeric_limits<double>::infinity()) {
             break;
         }
 
         visited[currentIndex] = true;
         auto currentAirport = airports[currentIndex];
 
+        // Process all flights from the current airport
         for (const auto& flight : currentAirport->getAllFlights()) {
             auto neighbor = flight->getDestinationAirport();
-            int neighborIndex = -1;
-            for (int k = 0; k < airports.size(); ++k) {
-                if (airports[k] == neighbor) {
-                    neighborIndex = k;
-                    break;
-                }
-            }
-            int newCost = costs[currentIndex] + flight->getCost();
+            int neighborIndex = getIndex(neighbor);
+            double newCost = costs[currentIndex] + flight->getCost();
 
             if (newCost < costs[neighborIndex]) {
                 costs[neighborIndex] = newCost;
@@ -433,15 +413,9 @@ vector<shared_ptr<Airport>> FlightNetwork::getCheapestPath(shared_ptr<Airport> s
         }
     }
 
+    // Reconstruct the path
     vector<shared_ptr<Airport>> path;
-    int destinationIndex = -1;
-    for (int i = 0; i < airports.size(); ++i) {
-        if (airports[i] == destination) {
-            destinationIndex = i;
-            break;
-        }
-    }
-    for (int at = destinationIndex; at != -1; at = previous[at]) {
+    for (int at = getIndex(destination); at != -1; at = previous[at]) {
         path.push_back(airports[at]);
     }
     std::reverse(path.begin(), path.end());
@@ -451,6 +425,7 @@ vector<shared_ptr<Airport>> FlightNetwork::getCheapestPath(shared_ptr<Airport> s
     }
     return {};
 }
+
 // Get Flight Plan
 vector<shared_ptr<Airport>> FlightNetwork::getFlightPlan(shared_ptr<Airport> source, shared_ptr<Airport> destination) {
     vector<vector<shared_ptr<Airport>>> allPaths;
@@ -541,13 +516,9 @@ shared_ptr<Airport> FlightNetwork::getLamestAirport() {
 
 // Optimize Graph
 shared_ptr<Graph<shared_ptr<Airport>>> FlightNetwork::OptimizedGraph(bool distance) {
-    if (distance) {
-        return make_shared<Graph<shared_ptr<Airport>>>(AirportNetwork_distance);
-    } else {
-        return make_shared<Graph<shared_ptr<Airport>>>(AirportNetwork_cost);
-    }
+    return distance ? make_shared<Graph<shared_ptr<Airport>>>(AirportNetwork_distance)
+                    : make_shared<Graph<shared_ptr<Airport>>>(AirportNetwork_cost);
 }
-
 // Alternate Route for a Flight
 vector<shared_ptr<Airport>> FlightNetwork::alternateRouteForFlight(shared_ptr<Flight> flight) {
     auto departureAirport = flight->getDepartureAirport();

@@ -316,7 +316,7 @@ shared_ptr<Flight> FlightNetwork::getFlight(string flightNumber) {
     return nullptr;
 }
 
-// Get Shortest
+
 vector<shared_ptr<Airport>> FlightNetwork::getShortestPath(shared_ptr<Airport> source, shared_ptr<Airport> destination) {
     vector<shared_ptr<Airport>> airports = Airports;
     vector<int> distances(airports.size(), INT_MAX);
@@ -384,7 +384,7 @@ vector<shared_ptr<Airport>> FlightNetwork::getShortestPath(shared_ptr<Airport> s
     }
     return {};
 }
-// Get Cheapest
+
 vector<shared_ptr<Airport>> FlightNetwork::getCheapestPath(shared_ptr<Airport> source, shared_ptr<Airport> destination) {
     vector<shared_ptr<Airport>> airports = Airports;
     vector<int> costs(airports.size(), INT_MAX);
@@ -433,6 +433,7 @@ vector<shared_ptr<Airport>> FlightNetwork::getCheapestPath(shared_ptr<Airport> s
         }
     }
 
+    // Reconstruct the path
     vector<shared_ptr<Airport>> path;
     int destinationIndex = -1;
     for (int i = 0; i < airports.size(); ++i) {
@@ -451,6 +452,7 @@ vector<shared_ptr<Airport>> FlightNetwork::getCheapestPath(shared_ptr<Airport> s
     }
     return {};
 }
+
 // Get Flight Plan
 vector<shared_ptr<Airport>> FlightNetwork::getFlightPlan(shared_ptr<Airport> source, shared_ptr<Airport> destination) {
     vector<vector<shared_ptr<Airport>>> allPaths;
@@ -541,13 +543,9 @@ shared_ptr<Airport> FlightNetwork::getLamestAirport() {
 
 // Optimize Graph
 shared_ptr<Graph<shared_ptr<Airport>>> FlightNetwork::OptimizedGraph(bool distance) {
-    if (distance) {
-        return make_shared<Graph<shared_ptr<Airport>>>(AirportNetwork_distance);
-    } else {
-        return make_shared<Graph<shared_ptr<Airport>>>(AirportNetwork_cost);
-    }
+    return distance ? make_shared<Graph<shared_ptr<Airport>>>(AirportNetwork_distance)
+                    : make_shared<Graph<shared_ptr<Airport>>>(AirportNetwork_cost);
 }
-
 // Alternate Route for a Flight
 vector<shared_ptr<Airport>> FlightNetwork::alternateRouteForFlight(shared_ptr<Flight> flight) {
     auto departureAirport = flight->getDepartureAirport();

@@ -541,13 +541,9 @@ shared_ptr<Airport> FlightNetwork::getLamestAirport() {
 
 // Optimize Graph
 shared_ptr<Graph<shared_ptr<Airport>>> FlightNetwork::OptimizedGraph(bool distance) {
-    if (distance) {
-        return make_shared<Graph<shared_ptr<Airport>>>(AirportNetwork_distance);
-    } else {
-        return make_shared<Graph<shared_ptr<Airport>>>(AirportNetwork_cost);
-    }
+    return distance ? make_shared<Graph<shared_ptr<Airport>>>(AirportNetwork_distance)
+                    : make_shared<Graph<shared_ptr<Airport>>>(AirportNetwork_cost);
 }
-
 // Alternate Route for a Flight
 vector<shared_ptr<Airport>> FlightNetwork::alternateRouteForFlight(shared_ptr<Flight> flight) {
     auto departureAirport = flight->getDepartureAirport();
