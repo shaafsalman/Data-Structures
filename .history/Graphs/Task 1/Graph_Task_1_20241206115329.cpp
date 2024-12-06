@@ -32,19 +32,19 @@ template <class T>
 void Graph<T>::addVertex(T data) {
     // Create a new vertex with the given data and add it to the graph
     // data: data of the vertex to be added
+     cout<<"adding vertex "<<data->getName()<<endl;
     // Solution:
     if (getVertex(data) != nullptr) {
         return;  // Exit early if the vertex already exists
     }
-         cout<<"adding vertex "<<data->getName()<<endl;
-
+    
     vertices.push_back(make_shared<Vertex<T>>(data));  // Add new vertex to the graph
     updateAdjacencyMatrix();  // Update the adjacency matrix after adding the vertex
 }
 
 template <class T>
 void Graph<T>::addEdge(T source, T destination, int weight) {
-    std::cout << "Adding edge from " << source->getName() << " to " << destination->getName() << " with weight " << weight << std::endl;
+    std::cout << "Adding edge from " << source << " to " << destination << " with weight " << weight << std::endl;
   // Debugging the vertices being compared
    
 

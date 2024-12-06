@@ -44,7 +44,7 @@ void Graph<T>::addVertex(T data) {
 
 template <class T>
 void Graph<T>::addEdge(T source, T destination, int weight) {
-    std::cout << "Adding edge from " << source->getName() << " to " << destination->getName() << " with weight " << weight << std::endl;
+    std::cout << "Adding edge from " << source << " to " << destination << " with weight " << weight << std::endl;
   // Debugging the vertices being compared
    
 

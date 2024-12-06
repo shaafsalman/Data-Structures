@@ -357,23 +357,15 @@ void FlightNetwork::addFlight(shared_ptr<Flight> flight) {
     auto departureAirport = flight->getDepartureAirport();
     auto destinationAirport = flight->getDestinationAirport();
 
-    // Ensure airports are added to the network if not already added
     addAirport(departureAirport);
     addAirport(destinationAirport);
 
-    // Add the flight to the airports' departure and arrival lists
     departureAirport->addDepartureFlight(flight);
     destinationAirport->addArrivalFlight(flight);
 
-    // Add both directions in distance and cost networks
     AirportNetwork_distance.addEdge(departureAirport, destinationAirport, flight->getDistance());
     AirportNetwork_cost.addEdge(departureAirport, destinationAirport, flight->getCost());
-
-    // Ensure bidirectional edges
-    AirportNetwork_distance.addEdge(destinationAirport, departureAirport, flight->getDistance());
-    AirportNetwork_cost.addEdge(destinationAirport, departureAirport, flight->getCost());
 }
-
 
 // Check if Airport Exists
 bool FlightNetwork::hasAirport(string name) {
@@ -427,109 +419,44 @@ shared_ptr<Flight> FlightNetwork::getFlight(string flightNumber) {
 
 
 vector<shared_ptr<Airport>> FlightNetwork::getShortestPath(shared_ptr<Airport> source, shared_ptr<Airport> destination) {
-    std::cout << "Finding shortest path from " << source->getName() 
-              << " to " << destination->getName() << std::endl;
+    auto path = AirportNetwork_distance.shortestPath(
+        make_shared<Vertex<shared_ptr<Airport>>>(source),
+        make_shared<Vertex<shared_ptr<Airport>>>(destination)
+    );
 
-    // Using BFS to find the shortest path (in terms of hops)
-    std::queue<std::shared_ptr<Airport>> queue;
-    std::unordered_map<std::shared_ptr<Airport>, std::shared_ptr<Airport>> previousAirport;
-    std::unordered_set<std::shared_ptr<Airport>> visited;
+    std::cout << "Shortest path between " << source->getName() 
+              << " and " << destination->getName() << ": ";
+    for (const auto& airport : path) {
+    }
+    std::cout << std::endl;
 
-    queue.push(source);
-    visited.insert(source);
-
-    while (!queue.empty()) {
-        auto currentAirport = queue.front();
-        queue.pop();
-
-        // If we reached the destination, reconstruct the path
-        if (currentAirport == destination) {
-            vector<shared_ptr<Airport>> path;
-            while (currentAirport != nullptr) {
-                path.push_back(currentAirport);
-                currentAirport = previousAirport[currentAirport];
-            }
-            std::reverse(path.begin(), path.end());
-            return path;
-        }
-
-        // Process all neighboring airports (flights)
-        for (const auto& flight : currentAirport->getAllFlights()) {
-            auto neighborAirport = flight->getDestinationAirport();
-            if (visited.find(neighborAirport) == visited.end()) {
-                visited.insert(neighborAirport);
-                queue.push(neighborAirport);
-                previousAirport[neighborAirport] = currentAirport;
-            }
-        }
+    vector<shared_ptr<Airport>> result;
+    for (const auto& vertex : path) {
+        result.push_back(vertex->getData());
     }
 
-    std::cerr << "No path found between " << source->getName() 
-              << " and " << destination->getName() << std::endl;
-    return {};  // Return an empty path if no path is found
+    return result;
 }
-
-
-
 
 vector<shared_ptr<Airport>> FlightNetwork::getCheapestPath(shared_ptr<Airport> source, shared_ptr<Airport> destination) {
-    std::cout << "Finding cheapest path from " << source->getName() 
-              << " to " << destination->getName() << std::endl;
+    auto path = AirportNetwork_cost.shortestPath(
+        make_shared<Vertex<shared_ptr<Airport>>>(source),
+        make_shared<Vertex<shared_ptr<Airport>>>(destination)
+    );
 
-    // Min-heap priority queue to store airports with their cumulative cost
-    auto compare = [](const std::pair<shared_ptr<Airport>, double>& a, const std::pair<shared_ptr<Airport>, double>& b) {
-        return a.second > b.second;  // We want the lowest cost to be processed first
-    };
+    std::cout << "Cheapest path between " << source->getName() 
+              << " and " << destination->getName() << ": ";
+    for (const auto& airport : path) {
+    }
+    std::cout << std::endl;
 
-    std::priority_queue<std::pair<shared_ptr<Airport>, double>, std::vector<std::pair<shared_ptr<Airport>, double>>, decltype(compare)> pq(compare);
-    
-    // Store the cost to reach each airport (initialize to infinity)
-    std::unordered_map<shared_ptr<Airport>, double> airportCosts;
-    airportCosts[source] = 0.0;
-
-    // Map to store the previous airport for path reconstruction
-    std::unordered_map<shared_ptr<Airport>, shared_ptr<Airport>> previousAirport;
-
-    pq.push({source, 0.0});  // Start with the source airport with a cost of 0
-
-    while (!pq.empty()) {
-        auto current = pq.top();
-        pq.pop();
-
-        auto currentAirport = current.first;
-        double currentCost = current.second;
-
-        // If we reached the destination, reconstruct the path
-        if (currentAirport == destination) {
-            std::vector<shared_ptr<Airport>> result;
-            while (currentAirport != nullptr) {
-                result.push_back(currentAirport);
-                currentAirport = previousAirport[currentAirport];
-            }
-            std::reverse(result.begin(), result.end());
-            return result;
-        }
-
-        // Explore all neighboring airports (flights)
-        for (const auto& flight : currentAirport->getAllFlights()) {
-            auto neighborAirport = flight->getDestinationAirport();
-            double newCost = currentCost + flight->getCost();
-
-            // If we found a cheaper way to get to the neighbor, update the cost and push it to the queue
-            if (airportCosts.find(neighborAirport) == airportCosts.end() || newCost < airportCosts[neighborAirport]) {
-                airportCosts[neighborAirport] = newCost;
-                pq.push({neighborAirport, newCost});
-                previousAirport[neighborAirport] = currentAirport;
-            }
-        }
+    vector<shared_ptr<Airport>> result;
+    for (const auto& vertex : path) {
+        result.push_back(vertex->getData());
     }
 
-    std::cerr << "No path found between " << source->getName() 
-              << " and " << destination->getName() << std::endl;
-    return {};  // Return an empty path if no path is found
+    return result;
 }
-
-
 
 
 // Get Flight Plan
@@ -621,44 +548,7 @@ shared_ptr<Graph<shared_ptr<Airport>>> FlightNetwork::OptimizedGraph(bool distan
 
 
 // Alternate Route for a Flight
-vector<shared_ptr<Airport>> FlightNetwork::alternateRouteForFlight(shared_ptr<Flight> flight) {
-    shared_ptr<Airport> departureAirport = flight->getDepartureAirport();
-    shared_ptr<Airport> destinationAirport = flight->getDestinationAirport();
 
-    // Check for a direct flight
-    auto directRoute = getCheapestPath(departureAirport, destinationAirport);
-
-    // If a direct route exists, find an alternate route with a stopover
-    if (directRoute.size() == 2) {
-        // For this example, we're considering LAX as a stopover airport
-        // You can modify this to any other logic to find a stopover airport
-
-        shared_ptr<Airport> stopoverAirport = nullptr;
-
-        // Look for possible stopover airports (from the departure airport)
-        for (const auto& flight : departureAirport->getAllFlights()) {
-            if (flight->getDestinationAirport() != destinationAirport) {
-                stopoverAirport = flight->getDestinationAirport();
-                break; // Break after finding the first available stopover
-            }
-        }
-
-        // If a stopover airport is found, we return the alternate route (e.g., JFK -> LAX -> ORD)
-        if (stopoverAirport) {
-            auto firstLeg = getCheapestPath(departureAirport, stopoverAirport);
-            auto secondLeg = getCheapestPath(stopoverAirport, destinationAirport);
-
-            // Combine the two legs into one path (without repeating the stopover airport)
-            firstLeg.pop_back();  // Remove the stopover from the end of the first leg
-            firstLeg.insert(firstLeg.end(), secondLeg.begin(), secondLeg.end()); // Merge paths
-
-            return firstLeg;
-        }
-    }
-
-    // If no alternate route is found, return the direct route (size 2)
-    return directRoute;
-}
 
 
 

@@ -32,28 +32,31 @@ template <class T>
 void Graph<T>::addVertex(T data) {
     // Create a new vertex with the given data and add it to the graph
     // data: data of the vertex to be added
+
     // Solution:
     if (getVertex(data) != nullptr) {
+        // cout << "Vertex already exists." << endl;
         return;  // Exit early if the vertex already exists
     }
-         cout<<"adding vertex "<<data->getName()<<endl;
-
+    
+    std::cout << "Adding new vertex: " << data << std::endl; 
     vertices.push_back(make_shared<Vertex<T>>(data));  // Add new vertex to the graph
     updateAdjacencyMatrix();  // Update the adjacency matrix after adding the vertex
 }
-
 template <class T>
 void Graph<T>::addEdge(T source, T destination, int weight) {
-    std::cout << "Adding edge from " << source->getName() << " to " << destination->getName() << " with weight " << weight << std::endl;
-  // Debugging the vertices being compared
-   
+    if (!weighted && weight != 0) {
+        std::cout << "Error: Cannot add weighted edge to an unweighted graph." << std::endl;
+        return;
+    }
 
     auto srcVertex = getVertex(source);
     auto destVertex = getVertex(destination);
- std::cout << "Source Airport: " << (srcVertex ? srcVertex->getData()->getName() : "Not Found") << std::endl;
-    std::cout << "Destination Airport: " << (destVertex ? destVertex->getData()->getName() : "Not Found") << std::endl;
+
     if (!srcVertex || !destVertex) {
-        std::cout << "Source and destination are " << srcVertex << " " << destVertex << std::endl;
+        std::cout << "Source: " << (srcVertex ? srcVertex->getData() : "Not found")
+                  << ", Destination: " << (destVertex ? destVertex->getData() : "Not found")
+                  << std::endl;
         std::cout << "Source or destination vertex not found." << std::endl;
         return;
     }
@@ -140,8 +143,7 @@ shared_ptr<Vertex<T>> Graph<T>::getVertex(T data) {
 
     // Solution:
      for (auto vertex : vertices) {
-        // cout<<vertex->getData()->getName() <<","<<data->getName()<<endl;
-        if (vertex->getData()->getName() == data->getName()) {  // Compare based on the name
+        if (vertex->getData() == data) {
             return vertex;
         }
     }

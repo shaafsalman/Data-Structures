@@ -32,26 +32,24 @@ template <class T>
 void Graph<T>::addVertex(T data) {
     // Create a new vertex with the given data and add it to the graph
     // data: data of the vertex to be added
+
     // Solution:
     if (getVertex(data) != nullptr) {
+        // cout << "Vertex already exists." << endl;
         return;  // Exit early if the vertex already exists
     }
-         cout<<"adding vertex "<<data->getName()<<endl;
-
+    
     vertices.push_back(make_shared<Vertex<T>>(data));  // Add new vertex to the graph
     updateAdjacencyMatrix();  // Update the adjacency matrix after adding the vertex
 }
 
 template <class T>
 void Graph<T>::addEdge(T source, T destination, int weight) {
-    std::cout << "Adding edge from " << source->getName() << " to " << destination->getName() << " with weight " << weight << std::endl;
-  // Debugging the vertices being compared
-   
+    std::cout << "Adding edge from " << source << " to " << destination << " with weight " << weight << std::endl;
 
     auto srcVertex = getVertex(source);
     auto destVertex = getVertex(destination);
- std::cout << "Source Airport: " << (srcVertex ? srcVertex->getData()->getName() : "Not Found") << std::endl;
-    std::cout << "Destination Airport: " << (destVertex ? destVertex->getData()->getName() : "Not Found") << std::endl;
+
     if (!srcVertex || !destVertex) {
         std::cout << "Source and destination are " << srcVertex << " " << destVertex << std::endl;
         std::cout << "Source or destination vertex not found." << std::endl;
@@ -140,8 +138,7 @@ shared_ptr<Vertex<T>> Graph<T>::getVertex(T data) {
 
     // Solution:
      for (auto vertex : vertices) {
-        // cout<<vertex->getData()->getName() <<","<<data->getName()<<endl;
-        if (vertex->getData()->getName() == data->getName()) {  // Compare based on the name
+        if (vertex->getData() == data) {
             return vertex;
         }
     }

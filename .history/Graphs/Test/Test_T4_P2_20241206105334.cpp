@@ -293,11 +293,7 @@ void testAlternateRoute(int& totalMarks) {
         network.addFlight(flight1);
         network.addFlight(flight2);
         network.addFlight(flight3);
-
-        
         auto route = network.alternateRouteForFlight(flight3);
-                std::cout << "route SIZE" << route.size() << std::endl;
-
         assert(route.size() == 3); 
         totalMarks += 2;
         std::cout << "Test Case 15 Passed: Alternate route" << std::endl;

@@ -620,8 +620,7 @@ shared_ptr<Graph<shared_ptr<Airport>>> FlightNetwork::OptimizedGraph(bool distan
 
 
 
-// Alternate Route for a Flight
-vector<shared_ptr<Airport>> FlightNetwork::alternateRouteForFlight(shared_ptr<Flight> flight) {
+// Alternate Route for a Flightvector<shared_ptr<Airport>> FlightNetwork::alternateRouteForFlight(shared_ptr<Flight> flight) {
     shared_ptr<Airport> departureAirport = flight->getDepartureAirport();
     shared_ptr<Airport> destinationAirport = flight->getDestinationAirport();
 
@@ -659,7 +658,6 @@ vector<shared_ptr<Airport>> FlightNetwork::alternateRouteForFlight(shared_ptr<Fl
     // If no alternate route is found, return the direct route (size 2)
     return directRoute;
 }
-
 
 
 // Airports Reachable
