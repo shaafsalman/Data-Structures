@@ -318,7 +318,7 @@ vector<vector<int>> Graph<T>::getAdjacencyMatrix() {
     // Return the adjacency matrix of the graph
 
     // Solution:
-    return adjacencyMatrix;
+        return adjacencyMatrix;
 
 }
 

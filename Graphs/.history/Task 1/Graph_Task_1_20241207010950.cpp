@@ -74,25 +74,19 @@ void Graph<T>::removeVertex(T data) {
     auto vertex = getVertex(data);
     if (!vertex) {return;}
 
-    // Removing all connected edges
+    // Removing all connected ones
     for (size_t i = 0; i < edges.size(); ) {
         if (edges[i]->getSource() == vertex || edges[i]->getDestination() == vertex) {
-            for (size_t j = i; j < edges.size() - 1; j++) {
-                edges[j] = edges[j + 1];
-            }
-            edges.pop_back(); 
+            edges.erase(edges.begin() + i); // Remove edge at index i
         } else {
             i++; 
         }
     }
 
-    // Remove the vertex itself
+    // Remove itself
     for (size_t i = 0; i < vertices.size(); ) {
         if (vertices[i] == vertex) {
-            for (size_t j = i; j < vertices.size() - 1; j++) {
-                vertices[j] = vertices[j + 1];
-            }
-            vertices.pop_back(); 
+            vertices.erase(vertices.begin() + i); 
         } else {
             i++; 
         }
@@ -158,7 +152,7 @@ vector<shared_ptr<Vertex<T>>> Graph<T>::getAllVertices() {
     // Return all the vertices in the graph
 
     // Solution:
-    return vertices;
+        return vertices;
 
 }
 
@@ -167,7 +161,7 @@ vector<shared_ptr<Edge<T>>> Graph<T>::getAllEdges() {
     // Return all the edges in the graph
 
     // Solution:
-    return edges;
+        return edges;
 
 }
 
@@ -177,7 +171,7 @@ vector<shared_ptr<Edge<T>>> Graph<T>::getEdges(shared_ptr<Vertex<T>> vertex) {
     // vertex: vertex whose edges are to be returned
 
     // Solution:
-    return vertex->getEdges();
+        return vertex->getEdges();
 
 }
 
@@ -215,7 +209,7 @@ vector<shared_ptr<Vertex<T>>> Graph<T>::getOutAdjacentVertices(shared_ptr<Vertex
     // vertex: vertex whose outgoing adjacent vertices are to be returned
 
     // Solution:
-    return getAdjacentVertices(vertex);
+        return getAdjacentVertices(vertex);
 
 }
 
@@ -224,7 +218,7 @@ bool Graph<T>::isDirected() {
     // Return true if the graph is directed, false otherwise
 
     // Solution:
-    return directed;
+        return directed;
 
 }
 
@@ -233,7 +227,7 @@ bool Graph<T>::isWeighted() {
     // Return true if the graph is weighted, false otherwise
 
     // Solution:
-    return weighted;
+        return weighted;
 
 }
 
@@ -242,7 +236,7 @@ void Graph<T>::setDirected(bool directed) {
     // set the direction status
 
     // Solution:
-    this->directed = directed;
+        this->directed = directed;
 
 }
 
@@ -251,7 +245,7 @@ void Graph<T>::setWeighted(bool weighted) {
     // set the weighted status
 
     // Solution:
-    this->weighted = weighted;
+        this->weighted = weighted;
 
 }
 
@@ -262,63 +256,43 @@ void Graph<T>::updateAdjacencyMatrix() {
     // weight of the edge for weighted graphs, 0 otherwise
 
     // Solution:
-    int size = vertices.size();
+  int size = vertices.size();
+    
+    // Initialize both matrices with zeros
+    adjacencyMatrix.assign(size, vector<int>(size, 0));  // Unweighted matrix
+    adjacencyMatrixWeighted.assign(size, vector<int>(size, 0));
 
-    // Initialize
-    adjacencyMatrix.clear();
-    adjacencyMatrixWeighted.clear();
+    // Update the adjacency matrix for edges
+    for (auto edge : edges) {
+        int srcIdx = find(vertices.begin(), vertices.end(), edge->getSource()) - vertices.begin();
+        int destIdx = find(vertices.begin(), vertices.end(), edge->getDestination()) - vertices.begin();
 
-    for (int i = 0; i < size; i++) {
-        adjacencyMatrix.push_back(vector<int>(size, 0));
-        adjacencyMatrixWeighted.push_back(vector<int>(size, 0));
-    }
-
-    // Update edges
-    for (size_t e = 0; e < edges.size(); e++) {
-        int srcIdx = -1, destIdx = -1;
-
-        // Find indices for src and dst
-        for (int v = 0; v < size; v++) {
-            if (vertices[v] == edges[e]->getSource()) {
-                srcIdx = v;
-            }
-            if (vertices[v] == edges[e]->getDestination()) {
-                destIdx = v;
-            }
-            if (srcIdx != -1 && destIdx != -1) {
-                break;
-            }
+        // If weighted graph, use the edge weight
+        if (weighted) {
+            adjacencyMatrix[srcIdx][destIdx] = edge->getWeight(); // Actual weight in weighted matrix
+            adjacencyMatrixWeighted[srcIdx][destIdx] = edge->getWeight(); // Actual weight in weighted matrix
+        } else {
+            adjacencyMatrix[srcIdx][destIdx] = 1;  // Presence of edge in adjacency matrix (unweighted)
         }
 
-
-        if (srcIdx != -1 && destIdx != -1) {
+        // For undirected graph, we also need to ensure symmetry
+        if (!directed) {
             if (weighted) {
-                adjacencyMatrix[srcIdx][destIdx] = edges[e]->getWeight();
-                adjacencyMatrixWeighted[srcIdx][destIdx] = edges[e]->getWeight();
+                adjacencyMatrix[destIdx][srcIdx] = edge->getWeight(); // Symmetry in weighted graph
+                adjacencyMatrixWeighted[destIdx][srcIdx] = edge->getWeight(); // Symmetry in weighted graph
             } else {
-                adjacencyMatrix[srcIdx][destIdx] = 1;
-            }
-
-            // For undirected graphs
-            if (!directed) {
-                if (weighted) {
-                    adjacencyMatrix[destIdx][srcIdx] = edges[e]->getWeight();
-                    adjacencyMatrixWeighted[destIdx][srcIdx] = edges[e]->getWeight();
-                } else {
-                    adjacencyMatrix[destIdx][srcIdx] = 1;
-                }
+                adjacencyMatrix[destIdx][srcIdx] = 1;  // Symmetric edge for undirected graph (unweighted)
             }
         }
     }
 }
-
 
 template <class T>
 vector<vector<int>> Graph<T>::getAdjacencyMatrix() {
     // Return the adjacency matrix of the graph
 
     // Solution:
-    return adjacencyMatrix;
+        return adjacencyMatrix;
 
 }
 
