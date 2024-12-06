@@ -123,6 +123,7 @@ vector<shared_ptr<Vertex<T>>> Graph<T>::dijkstraShortestPath(shared_ptr<Vertex<T
     if (source == nullptr) return result;
 
     map<shared_ptr<Vertex<T>>, int> distances;
+    // Initialize all vertices with a distance of INT_MAX
     for (auto& vertex : vertices) {
         distances[vertex] = INT_MAX;
     }
@@ -133,24 +134,29 @@ vector<shared_ptr<Vertex<T>>> Graph<T>::dijkstraShortestPath(shared_ptr<Vertex<T
     toVisit.insert(source);
 
     while (!toVisit.empty()) {
+        // Get the vertex with the smallest distance (first element in the set)
         shared_ptr<Vertex<T>> current = *toVisit.begin();
         toVisit.erase(toVisit.begin());
         visited.insert(current);
 
+        // Iterate through the edges of the current vertex
         vector<shared_ptr<Edge<T>>> edges = current->getEdges();
         for (auto& edge : edges) {
             shared_ptr<Vertex<T>> adjacent = edge->getDestination();
 
+            // Only visit unvisited adjacent vertices
             if (visited.find(adjacent) == visited.end()) {
                 int newDist = distances[current] + edge->getWeight();
+                // If a shorter path is found, update the distance
                 if (newDist < distances[adjacent]) {
                     distances[adjacent] = newDist;
-                    toVisit.insert(adjacent);  
+                    toVisit.insert(adjacent);  // Add to toVisit set
                 }
             }
         }
     }
 
+    // Collect vertices that are reachable and have a finite distance
     for (auto& vertex : vertices) {
         if (distances[vertex] != INT_MAX) {
             result.push_back(vertex);

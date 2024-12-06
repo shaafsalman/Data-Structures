@@ -2,10 +2,6 @@
 #include "../Task 1/Graph_Task_1.cpp"
 #include <queue>
 #include <stack>
-#include <unordered_map>
-#include <climits>
-#include <set>        
-#include <map>  
 
 
 // ::::::::::::::::::::::::::::::::::::::: TASK 2 :::::::::::::::::::::::::::::::::::::::::::
@@ -18,13 +14,13 @@ vector<shared_ptr<Vertex<T>>> Graph<T>::BFSTraversal(shared_ptr<Vertex<T>> verte
     // vertex: starting vertex for the traversal
 
     vector<shared_ptr<Vertex<T>>> visitedVertices;
-    if (!vertex) return visitedVertices;
+    if (vertex == nullptr) return visitedVertices;
 
     queue<shared_ptr<Vertex<T>>> toVisit;
-    vector<shared_ptr<Vertex<T>>> visited;
+    set<shared_ptr<Vertex<T>>> visited;
 
     toVisit.push(vertex);
-    visited.push_back(vertex);
+    visited.insert(vertex);
 
     while (!toVisit.empty()) {
         shared_ptr<Vertex<T>> current = toVisit.front();
@@ -32,17 +28,10 @@ vector<shared_ptr<Vertex<T>>> Graph<T>::BFSTraversal(shared_ptr<Vertex<T>> verte
         visitedVertices.push_back(current);
 
         vector<shared_ptr<Vertex<T>>> adjacentVertices = getAdjacentVertices(current);
-        for (size_t i = 0; i < adjacentVertices.size(); ++i) {
-            bool alreadyVisited = false;
-            for (size_t j = 0; j < visited.size(); ++j) {
-                if (visited[j] == adjacentVertices[i]) {
-                    alreadyVisited = true;
-                    break;
-                }
-            }
-            if (!alreadyVisited) {
-                visited.push_back(adjacentVertices[i]);
-                toVisit.push(adjacentVertices[i]);
+        for (auto& adj : adjacentVertices) {
+            if (visited.find(adj) == visited.end()) {
+                visited.insert(adj);
+                toVisit.push(adj);
             }
         }
     }
@@ -58,32 +47,26 @@ vector<shared_ptr<Vertex<T>>> Graph<T>::DFSTraversal(shared_ptr<Vertex<T>> verte
     // vertex: starting vertex for the traversal
 
     vector<shared_ptr<Vertex<T>>> visitedVertices;
-    if (!vertex) return visitedVertices;
+    if (vertex == nullptr) return visitedVertices;
 
     stack<shared_ptr<Vertex<T>>> toVisit;
-    vector<shared_ptr<Vertex<T>>> visited;
+    set<shared_ptr<Vertex<T>>> visited;
 
     toVisit.push(vertex);
 
     while (!toVisit.empty()) {
         shared_ptr<Vertex<T>> current = toVisit.top();
         toVisit.pop();
-
-        bool alreadyVisited = false;
-        for (size_t i = 0; i < visited.size(); ++i) {
-            if (visited[i] == current) {
-                alreadyVisited = true;
-                break;
-            }
-        }
-
-        if (!alreadyVisited) {
-            visited.push_back(current);
+        
+        if (visited.find(current) == visited.end()) {
+            visited.insert(current);
             visitedVertices.push_back(current);
-
+            
             vector<shared_ptr<Vertex<T>>> adjacentVertices = getAdjacentVertices(current);
-            for (size_t i = 0; i < adjacentVertices.size(); ++i) {
-                toVisit.push(adjacentVertices[i]);
+            for (auto& adj : adjacentVertices) {
+                if (visited.find(adj) == visited.end()) {
+                    toVisit.push(adj);
+                }
             }
         }
     }
@@ -119,7 +102,7 @@ vector<shared_ptr<Vertex<T>>> Graph<T>::dijkstraShortestPath(shared_ptr<Vertex<T
     // Return the vertices in the ascending order of their distance from the source vertex
     // source: source vertex for the algorithm
 
-     vector<shared_ptr<Vertex<T>>> result;
+    vector<shared_ptr<Vertex<T>>> result;
     if (source == nullptr) return result;
 
     map<shared_ptr<Vertex<T>>, int> distances;
@@ -140,12 +123,11 @@ vector<shared_ptr<Vertex<T>>> Graph<T>::dijkstraShortestPath(shared_ptr<Vertex<T
         vector<shared_ptr<Edge<T>>> edges = current->getEdges();
         for (auto& edge : edges) {
             shared_ptr<Vertex<T>> adjacent = edge->getDestination();
-
             if (visited.find(adjacent) == visited.end()) {
                 int newDist = distances[current] + edge->getWeight();
                 if (newDist < distances[adjacent]) {
                     distances[adjacent] = newDist;
-                    toVisit.insert(adjacent);  
+                    toVisit.insert(adjacent);
                 }
             }
         }

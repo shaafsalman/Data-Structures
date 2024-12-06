@@ -119,7 +119,7 @@ vector<shared_ptr<Vertex<T>>> Graph<T>::dijkstraShortestPath(shared_ptr<Vertex<T
     // Return the vertices in the ascending order of their distance from the source vertex
     // source: source vertex for the algorithm
 
-     vector<shared_ptr<Vertex<T>>> result;
+    vector<shared_ptr<Vertex<T>>> result;
     if (source == nullptr) return result;
 
     map<shared_ptr<Vertex<T>>, int> distances;
@@ -140,12 +140,11 @@ vector<shared_ptr<Vertex<T>>> Graph<T>::dijkstraShortestPath(shared_ptr<Vertex<T
         vector<shared_ptr<Edge<T>>> edges = current->getEdges();
         for (auto& edge : edges) {
             shared_ptr<Vertex<T>> adjacent = edge->getDestination();
-
             if (visited.find(adjacent) == visited.end()) {
                 int newDist = distances[current] + edge->getWeight();
                 if (newDist < distances[adjacent]) {
                     distances[adjacent] = newDist;
-                    toVisit.insert(adjacent);  
+                    toVisit.insert(adjacent);
                 }
             }
         }

@@ -119,41 +119,47 @@ vector<shared_ptr<Vertex<T>>> Graph<T>::dijkstraShortestPath(shared_ptr<Vertex<T
     // Return the vertices in the ascending order of their distance from the source vertex
     // source: source vertex for the algorithm
 
-     vector<shared_ptr<Vertex<T>>> result;
-    if (source == nullptr) return result;
+   vector<shared_ptr<Vertex<T>>> result;
+    if (source == nullptr) return result;  // If source is null, return empty result
 
-    map<shared_ptr<Vertex<T>>, int> distances;
-    for (auto& vertex : vertices) {
-        distances[vertex] = INT_MAX;
-    }
-    distances[source] = 0;
+    int n = vertices.size();
+    vector<int> distances(n, INT_MAX);  // Distance of all vertices is initially infinite
+    vector<bool> visited(n, false);  // Track if the vertex has been visited
+    distances[getVertexIndex(source)] = 0;  // Distance to source is 0
 
-    set<shared_ptr<Vertex<T>>> visited;
-    set<shared_ptr<Vertex<T>>> toVisit;
-    toVisit.insert(source);
+    // Process each vertex
+    for (int count = 0; count < n; ++count) {
+        int minDistance = INT_MAX;
+        int currentIndex = -1;
 
-    while (!toVisit.empty()) {
-        shared_ptr<Vertex<T>> current = *toVisit.begin();
-        toVisit.erase(toVisit.begin());
-        visited.insert(current);
+        // Find the unvisited vertex with the smallest distance
+        for (int i = 0; i < n; ++i) {
+            if (!visited[i] && distances[i] < minDistance) {
+                minDistance = distances[i];
+                currentIndex = i;
+            }
+        }
 
-        vector<shared_ptr<Edge<T>>> edges = current->getEdges();
+        if (currentIndex == -1) break;  // If no more reachable vertices, exit the loop
+        visited[currentIndex] = true;  // Mark current vertex as visited
+
+        // Update the distances to adjacent vertices
+        shared_ptr<Vertex<T>> currentVertex = vertices[currentIndex];
+        vector<shared_ptr<Edge<T>>> edges = currentVertex->getEdges();
         for (auto& edge : edges) {
             shared_ptr<Vertex<T>> adjacent = edge->getDestination();
-
-            if (visited.find(adjacent) == visited.end()) {
-                int newDist = distances[current] + edge->getWeight();
-                if (newDist < distances[adjacent]) {
-                    distances[adjacent] = newDist;
-                    toVisit.insert(adjacent);  
-                }
+            int adjacentIndex = getVertexIndex(adjacent);
+            int newDistance = distances[currentIndex] + edge->getWeight();
+            if (!visited[adjacentIndex] && newDistance < distances[adjacentIndex]) {
+                distances[adjacentIndex] = newDistance;  // Update distance if shorter
             }
         }
     }
 
-    for (auto& vertex : vertices) {
-        if (distances[vertex] != INT_MAX) {
-            result.push_back(vertex);
+    // Collect vertices with finite distances
+    for (int i = 0; i < n; ++i) {
+        if (distances[i] != INT_MAX) {
+            result.push_back(vertices[i]);
         }
     }
 

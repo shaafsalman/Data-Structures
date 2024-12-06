@@ -119,7 +119,7 @@ vector<shared_ptr<Vertex<T>>> Graph<T>::dijkstraShortestPath(shared_ptr<Vertex<T
     // Return the vertices in the ascending order of their distance from the source vertex
     // source: source vertex for the algorithm
 
-     vector<shared_ptr<Vertex<T>>> result;
+    vector<shared_ptr<Vertex<T>>> result;
     if (source == nullptr) return result;
 
     map<shared_ptr<Vertex<T>>, int> distances;
@@ -140,12 +140,11 @@ vector<shared_ptr<Vertex<T>>> Graph<T>::dijkstraShortestPath(shared_ptr<Vertex<T
         vector<shared_ptr<Edge<T>>> edges = current->getEdges();
         for (auto& edge : edges) {
             shared_ptr<Vertex<T>> adjacent = edge->getDestination();
-
             if (visited.find(adjacent) == visited.end()) {
                 int newDist = distances[current] + edge->getWeight();
                 if (newDist < distances[adjacent]) {
                     distances[adjacent] = newDist;
-                    toVisit.insert(adjacent);  
+                    toVisit.insert(adjacent);
                 }
             }
         }
@@ -170,30 +169,32 @@ vector<shared_ptr<Vertex<T>>> Graph<T>::bellmanFordShortestPath(shared_ptr<Verte
     // source: source vertex for the algorithm
 
     vector<shared_ptr<Vertex<T>>> result;
-    if (source == nullptr) return result;
+    if (source == nullptr) return result;  // If source is null, return empty result
 
-    map<shared_ptr<Vertex<T>>, int> distances;
-    for (auto& vertex : vertices) {
-        distances[vertex] = INT_MAX;
-    }
-    distances[source] = 0;
+    int n = vertices.size();
+    vector<int> distances(n, INT_MAX);  // Distance of all vertices is initially infinite
+    distances[getVertexIndex(source)] = 0;  // Distance to source is 0
 
-    int numVertices = vertices.size();
-    for (int i = 1; i < numVertices; ++i) {
+    // Relax all edges (n-1) times
+    for (int i = 0; i < n - 1; ++i) {
         for (auto& edge : edges) {
             shared_ptr<Vertex<T>> u = edge->getSource();
             shared_ptr<Vertex<T>> v = edge->getDestination();
             int weight = edge->getWeight();
+            int uIndex = getVertexIndex(u);
+            int vIndex = getVertexIndex(v);
 
-            if (distances[u] != INT_MAX && distances[u] + weight < distances[v]) {
-                distances[v] = distances[u] + weight;
+            // Update the distance if a shorter path is found
+            if (distances[uIndex] != INT_MAX && distances[uIndex] + weight < distances[vIndex]) {
+                distances[vIndex] = distances[uIndex] + weight;
             }
         }
     }
 
-    for (auto& vertex : vertices) {
-        if (distances[vertex] != INT_MAX) {
-            result.push_back(vertex);
+    // Collect vertices with finite distances
+    for (int i = 0; i < n; ++i) {
+        if (distances[i] != INT_MAX) {
+            result.push_back(vertices[i]);
         }
     }
 

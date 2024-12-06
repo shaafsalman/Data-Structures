@@ -119,41 +119,41 @@ vector<shared_ptr<Vertex<T>>> Graph<T>::dijkstraShortestPath(shared_ptr<Vertex<T
     // Return the vertices in the ascending order of their distance from the source vertex
     // source: source vertex for the algorithm
 
-     vector<shared_ptr<Vertex<T>>> result;
-    if (source == nullptr) return result;
+   vector<shared_ptr<Vertex<T>>> result;
+    if (!source) return result;
 
-    map<shared_ptr<Vertex<T>>, int> distances;
-    for (auto& vertex : vertices) {
-        distances[vertex] = INT_MAX;
-    }
-    distances[source] = 0;
+    vector<int> distances(vertices.size(), INT_MAX);
+    vector<bool> visited(vertices.size(), false);
+    distances[getVertexIndex(source)] = 0;
 
-    set<shared_ptr<Vertex<T>>> visited;
-    set<shared_ptr<Vertex<T>>> toVisit;
-    toVisit.insert(source);
+    for (size_t count = 0; count < vertices.size(); ++count) {
+        int minDistance = INT_MAX;
+        int currentIndex = -1;
 
-    while (!toVisit.empty()) {
-        shared_ptr<Vertex<T>> current = *toVisit.begin();
-        toVisit.erase(toVisit.begin());
-        visited.insert(current);
+        for (size_t i = 0; i < vertices.size(); ++i) {
+            if (!visited[i] && distances[i] < minDistance) {
+                minDistance = distances[i];
+                currentIndex = i;
+            }
+        }
 
-        vector<shared_ptr<Edge<T>>> edges = current->getEdges();
-        for (auto& edge : edges) {
-            shared_ptr<Vertex<T>> adjacent = edge->getDestination();
+        if (currentIndex == -1) break; // No remaining vertices to process
+        visited[currentIndex] = true;
 
-            if (visited.find(adjacent) == visited.end()) {
-                int newDist = distances[current] + edge->getWeight();
-                if (newDist < distances[adjacent]) {
-                    distances[adjacent] = newDist;
-                    toVisit.insert(adjacent);  
-                }
+        shared_ptr<Vertex<T>> currentVertex = vertices[currentIndex];
+        vector<shared_ptr<Edge<T>>> edges = currentVertex->getEdges();
+        for (size_t i = 0; i < edges.size(); ++i) {
+            shared_ptr<Vertex<T>> adjacent = edges[i]->getDestination();
+            int adjacentIndex = getVertexIndex(adjacent);
+            if (!visited[adjacentIndex] && distances[currentIndex] + edges[i]->getWeight() < distances[adjacentIndex]) {
+                distances[adjacentIndex] = distances[currentIndex] + edges[i]->getWeight();
             }
         }
     }
 
-    for (auto& vertex : vertices) {
-        if (distances[vertex] != INT_MAX) {
-            result.push_back(vertex);
+    for (size_t i = 0; i < vertices.size(); ++i) {
+        if (distances[i] != INT_MAX) {
+            result.push_back(vertices[i]);
         }
     }
 

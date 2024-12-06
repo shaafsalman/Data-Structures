@@ -173,24 +173,29 @@ vector<shared_ptr<Vertex<T>>> Graph<T>::bellmanFordShortestPath(shared_ptr<Verte
     if (source == nullptr) return result;
 
     map<shared_ptr<Vertex<T>>, int> distances;
+    // Initialize all vertices with a distance of INT_MAX
     for (auto& vertex : vertices) {
         distances[vertex] = INT_MAX;
     }
     distances[source] = 0;
 
     int numVertices = vertices.size();
+    // Relax all edges (numVertices - 1) times
     for (int i = 1; i < numVertices; ++i) {
+        // Go through each edge and update the distances if a shorter path is found
         for (auto& edge : edges) {
             shared_ptr<Vertex<T>> u = edge->getSource();
             shared_ptr<Vertex<T>> v = edge->getDestination();
             int weight = edge->getWeight();
 
+            // Check if the current distance to u is not infinity and the new distance to v is shorter
             if (distances[u] != INT_MAX && distances[u] + weight < distances[v]) {
                 distances[v] = distances[u] + weight;
             }
         }
     }
 
+    // Collect all vertices whose distance is not INT_MAX
     for (auto& vertex : vertices) {
         if (distances[vertex] != INT_MAX) {
             result.push_back(vertex);
