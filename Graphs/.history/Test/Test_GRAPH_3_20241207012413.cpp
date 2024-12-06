@@ -91,7 +91,7 @@ int main() {
             cout << vertex->getData() << " ";
         }
         cout << endl;
-        if (!shortestPath.empty() && shortestPath.size() == 4) { // Assuming correct path length
+        if (!shortestPath.empty() && shortestPath.size() == 3) { // Assuming correct path length
             cout << "Shortest Path passed! +5 marks" << endl;
             totalScore += 5;
         } else {

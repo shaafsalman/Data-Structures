@@ -89,7 +89,7 @@ public:
     Graph<T> reverseGraph();
     void dfsForSCCs(shared_ptr<Vertex<T>> vertex, unordered_set<shared_ptr<Vertex<T>>>& visited, vector<shared_ptr<Vertex<T>>>& component, Graph<T>& reversedGraph);
     
-    vector<shared_ptr<Vertex<T>>> DFSTraversalReversed(shared_ptr<Vertex<T>> vertex);
+    vector<shared_ptr<Vertex<T>>> Graph<T>::DFSTraversalReversed(shared_ptr<Vertex<T>> vertex);
 
     
 };

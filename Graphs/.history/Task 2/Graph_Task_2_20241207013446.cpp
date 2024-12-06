@@ -200,3 +200,21 @@ vector<shared_ptr<Vertex<T>>> Graph<T>::bellmanFordShortestPath(shared_ptr<Verte
     return result;
 }
 
+
+
+template <class T>
+void Graph<T>::DFSUtil(shared_ptr<Vertex<T>> vertex, vector<shared_ptr<Vertex<T>>>& visited, stack<shared_ptr<Vertex<T>>>& stack) {
+    visited.push_back(vertex);
+    vertex->setVisited(true);
+
+    vector<shared_ptr<Edge<T>>> edges = vertex->getEdges();
+    for (auto& edge : edges) {
+        shared_ptr<Vertex<T>> adjacent = edge->getDestination();
+        if (!adjacent->isVisited()) {
+            DFSUtil(adjacent, visited, stack);
+        }
+    }
+
+    // Push the current vertex to stack once DFS completes for all its adjacent vertices
+    stack.push(vertex);
+}

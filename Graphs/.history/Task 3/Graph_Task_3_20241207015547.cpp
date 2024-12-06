@@ -17,6 +17,11 @@
 #include <functional>
 
 
+
+
+
+
+
 template <class T>
 vector<shared_ptr<Vertex<T>>> Graph<T>::shortestPath(shared_ptr<Vertex<T>> source, shared_ptr<Vertex<T>> destination) {
     if (!source || !destination) {
@@ -362,6 +367,7 @@ vector<shared_ptr<Graph<T>>> Graph<T>::SpanningTrees() {
 
 
 // BONUS TASK 2 FOR 5 MARKS
+
 template <class T>
 vector<vector<shared_ptr<Vertex<T>>>> Graph<T>::connectedComponents() {
     vector<vector<shared_ptr<Vertex<T>>>> components;
@@ -408,7 +414,13 @@ vector<vector<shared_ptr<Vertex<T>>>> Graph<T>::connectedComponents() {
 
     return components;
 }
+
+
 // Helper
+
+
+
+
 
 template <class T>
 vector<shared_ptr<Vertex<T>>> Graph<T>::DFSTraversalReversed(shared_ptr<Vertex<T>> vertex) {

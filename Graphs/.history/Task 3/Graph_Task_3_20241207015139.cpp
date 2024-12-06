@@ -17,6 +17,11 @@
 #include <functional>
 
 
+
+
+
+
+
 template <class T>
 vector<shared_ptr<Vertex<T>>> Graph<T>::shortestPath(shared_ptr<Vertex<T>> source, shared_ptr<Vertex<T>> destination) {
     if (!source || !destination) {
@@ -120,6 +125,23 @@ vector<shared_ptr<Vertex<T>>> Graph<T>::shortestPath(shared_ptr<Vertex<T>> sourc
 
     return {}; 
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 template <class T>
 vector<shared_ptr<Vertex<T>>> Graph<T>::topologicalSort() {
     if (!directed) {
@@ -270,14 +292,24 @@ shared_ptr<Graph<T>> Graph<T>::minimumSpanningTree() {
     return mst;
 }
 
+
+
+
+
+
+
+
+
+
 template <class T>
 vector<vector<shared_ptr<Vertex<T>>>> Graph<T>::stronglyConnectedComponents() {
     vector<vector<shared_ptr<Vertex<T>>>> scc;
 
     int n = vertices.size();
-    vector<bool> visited(n, false); 
+    vector<bool> visited(n, false);  // Array to track visited vertices
     vector<shared_ptr<Vertex<T>>> finishOrder;
 
+    // First DFS to fill the finish order
     for (int i = 0; i < n; ++i) {
         if (!visited[i]) {
             vector<shared_ptr<Vertex<T>>> traversal = DFSTraversal(vertices[i]);
@@ -287,10 +319,12 @@ vector<vector<shared_ptr<Vertex<T>>>> Graph<T>::stronglyConnectedComponents() {
         }
     }
 
-    vector<bool> visitedReversed(n, false); 
+    // Second DFS on the reversed graph to find SCC
+    vector<bool> visitedReversed(n, false);  // Array for visited vertices in reversed graph
     for (int i = finishOrder.size() - 1; i >= 0; --i) {
         shared_ptr<Vertex<T>> vertex = finishOrder[i];
         int idx = -1;
+        // Find index of the vertex in the original vertices vector
         for (int j = 0; j < n; ++j) {
             if (vertices[j] == vertex) {
                 idx = j;
@@ -299,6 +333,7 @@ vector<vector<shared_ptr<Vertex<T>>>> Graph<T>::stronglyConnectedComponents() {
         }
 
         if (!visitedReversed[idx]) {
+            // Perform DFS on reversed graph to discover strongly connected components
             vector<shared_ptr<Vertex<T>>> component = DFSTraversalReversed(vertex);
             scc.push_back(component);
         }
@@ -313,102 +348,96 @@ vector<vector<shared_ptr<Vertex<T>>>> Graph<T>::stronglyConnectedComponents() {
 // BONUS TASK 1 FOR 5 MARKS
 template <class T>
 vector<shared_ptr<Graph<T>>> Graph<T>::SpanningTrees() {
+    // Vector to store the spanning trees
     vector<shared_ptr<Graph<T>>> spanningTrees;
-    
-    vector<bool> visited(vertices.size(), false);
-    
-    for (auto vertex : vertices) {
-        int idx = -1;
-        for (int i = 0; i < vertices.size(); ++i) {
-            if (vertices[i] == vertex) {
-                idx = i;
-                break;
+
+    // Helper DFS function to explore the graph and build a spanning tree
+    std::function<void(shared_ptr<Vertex<T>>, std::unordered_map<shared_ptr<Vertex<T>>, bool>&, shared_ptr<Graph<T>>)> 
+    dfsSpanningTree = [&](shared_ptr<Vertex<T>> vertex, 
+                           std::unordered_map<shared_ptr<Vertex<T>>, bool>& visited, 
+                           shared_ptr<Graph<T>> tree) {
+        visited[vertex] = true;
+        tree->addVertex(vertex->getData());  // Add the current vertex to the tree
+        for (auto neighbor : this->getAdjacentVertices(vertex)) {  // Use 'this' to access member function
+            if (!visited[neighbor]) {
+                tree->addEdge(vertex->getData(), neighbor->getData());  // Add edge to the tree
+                dfsSpanningTree(neighbor, visited, tree);  // Recursive call
             }
         }
+    };
 
-        if (!visited[idx]) {
+    // If the graph has no vertices, return an empty vector
+    if (vertices.empty()) {
+        return spanningTrees;
+    }
+
+    // Initialize visited map
+    unordered_map<shared_ptr<Vertex<T>>, bool> visited;
+
+    // Iterate over all vertices, performing DFS to find each connected component
+    for (auto vertex : vertices) {
+        if (!visited[vertex]) {
+            // Create a new graph object to store the spanning tree for the component
             shared_ptr<Graph<T>> tree = make_shared<Graph<T>>();
-            stack<shared_ptr<Vertex<T>>> toVisit;
-            toVisit.push(vertex);
-            visited[idx] = true;
-
-            while (!toVisit.empty()) {
-                shared_ptr<Vertex<T>> current = toVisit.top();
-                toVisit.pop();
-                tree->addVertex(current->getData());
-
-                vector<shared_ptr<Vertex<T>>> adjacentVertices = this->getAdjacentVertices(current);
-                for (auto& neighbor : adjacentVertices) {
-                    int neighborIdx = -1;
-                    for (int i = 0; i < vertices.size(); ++i) {
-                        if (vertices[i] == neighbor) {
-                            neighborIdx = i;
-                            break;
-                        }
-                    }
-                    if (!visited[neighborIdx]) {
-                        tree->addEdge(current->getData(), neighbor->getData());
-                        visited[neighborIdx] = true;
-                        toVisit.push(neighbor);
-                    }
-                }
-            }
-            spanningTrees.push_back(tree);
+            dfsSpanningTree(vertex, visited, tree);  // Start DFS from the unvisited vertex
+            spanningTrees.push_back(tree);  // Add the tree to the result
         }
     }
 
-    return spanningTrees;
+    return spanningTrees;  // Return the vector of spanning trees
 }
 
 
 // BONUS TASK 2 FOR 5 MARKS
+
 template <class T>
 vector<vector<shared_ptr<Vertex<T>>>> Graph<T>::connectedComponents() {
+    // Find all the connected components of the graph
+    // A connected component is a set of vertices where each vertex is reachable from any other vertex in the same set
+    // Return the connected components as a vector of vectors of vertices
+
+    // Solution:
     vector<vector<shared_ptr<Vertex<T>>>> components;
-    vector<bool> visited(vertices.size(), false);
+    unordered_set<shared_ptr<Vertex<T>>> visited;
 
     for (auto vertex : vertices) {
-        int idx = -1;
-        for (int i = 0; i < vertices.size(); ++i) {
-            if (vertices[i] == vertex) {
-                idx = i;
-                break;
-            }
-        }
-
-        if (!visited[idx]) {
+        if (visited.find(vertex) == visited.end()) {
+            // Perform DFS to find all vertices in the same component
             vector<shared_ptr<Vertex<T>>> component;
             stack<shared_ptr<Vertex<T>>> toVisit;
             toVisit.push(vertex);
-            visited[idx] = true;
 
             while (!toVisit.empty()) {
-                shared_ptr<Vertex<T>> current = toVisit.top();
+                auto currentVertex = toVisit.top();
                 toVisit.pop();
-                component.push_back(current);
 
-                vector<shared_ptr<Vertex<T>>> adjacentVertices = this->getAdjacentVertices(current);
-                for (auto& neighbor : adjacentVertices) {
-                    int neighborIdx = -1;
-                    for (int i = 0; i < vertices.size(); ++i) {
-                        if (vertices[i] == neighbor) {
-                            neighborIdx = i;
-                            break;
+                if (visited.find(currentVertex) == visited.end()) {
+                    visited.insert(currentVertex);
+                    component.push_back(currentVertex);
+
+                    // Visit all adjacent vertices
+                    for (auto adjVertex : getAdjacentVertices(currentVertex)) {
+                        if (visited.find(adjVertex) == visited.end()) {
+                            toVisit.push(adjVertex);
                         }
-                    }
-                    if (!visited[neighborIdx]) {
-                        visited[neighborIdx] = true;
-                        toVisit.push(neighbor);
                     }
                 }
             }
+
             components.push_back(component);
         }
     }
 
     return components;
 }
-// Helper
+
+
+
+
+
+
+
+
 
 template <class T>
 vector<shared_ptr<Vertex<T>>> Graph<T>::DFSTraversalReversed(shared_ptr<Vertex<T>> vertex) {
